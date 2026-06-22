@@ -57,4 +57,5 @@ if __name__ == '__main__':
             if exclude:
                 f.write('#SBATCH --exclude=%s\n' % exclude)
             f.write('\n\nset -e\n\n')
+            f.write('source venv/bin/activate\n')
             f.write('python3 -m parcelmate.bin.main %s\n' % path)

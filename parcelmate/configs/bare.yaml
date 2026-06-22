@@ -1,0 +1,12 @@
+output_dir: results
+connectivity:
+  model_name: gpt2
+  domains: [whitespace]
+  seq_len: 128
+  batch_size: 2
+  n_samples: 1
+  n_tokens: 256
+parcellation:
+  n_networks: 5
+  n_samples: 3
+  connectivity_pca_components: 10

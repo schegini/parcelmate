@@ -1,0 +1,3 @@
+output_dir: 'test'
+parcellation:
+  connectivity_pca_components: 200

@@ -1,0 +1,22 @@
+[project]
+name = "parcelmate"
+version = "0.1.0"
+description = "Neural network parcellation and connectivity analysis toolkit"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "torch",
+    "transformers",
+    "datasets",
+    "h5py",
+    "matplotlib",
+    "pandas",
+    "seaborn",
+    "pyyaml",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

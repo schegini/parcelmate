@@ -57,4 +57,15 @@ if __name__ == '__main__':
             if exclude:
                 f.write('#SBATCH --exclude=%s\n' % exclude)
             f.write('\n\nset -e\n\n')
-            f.write('python3 -m parcelmate.bin.main %s\n' % path)
+            # Ensure uv is available (installs to ~/.local/bin if missing)
+            f.write('if ! command -v uv &> /dev/null; then\n')
+            f.write('    if [ -x "$HOME/.local/bin/uv" ]; then\n')
+            f.write('        export PATH="$HOME/.local/bin:$PATH"\n')
+            f.write('    else\n')
+            f.write('        curl -LsSf https://astral.sh/uv/install.sh | sh\n')
+            f.write('        export PATH="$HOME/.local/bin:$PATH"\n')
+            f.write('    fi\n')
+            f.write('fi\n\n')
+            # Sync venv and run
+            f.write('uv sync\n')
+            f.write('uv run python -m parcelmate.bin.main %s\n' % path)

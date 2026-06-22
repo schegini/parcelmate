@@ -7,7 +7,7 @@ base = """#!/bin/bash
 #SBATCH --job-name=%s
 #SBATCH --output="%s-%%N-%%j.out"
 #SBATCH --time=%d:00:00
-#SBATCH --mem=%dgb
+#SBATCH --mem=%dG
 #SBATCH --ntasks=%d
 """
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         os.makedirs(outdir)
 
     for path in paths:
-        job_name = os.path.basename(path).replace('.yaml', '')
+        job_name = os.path.splitext(os.path.basename(path))[0]
         filename = outdir + '/' + job_name + '.pbs'
         with open(filename, 'w') as f:
             f.write(base % (job_name, job_name, time, memory, n_cores))

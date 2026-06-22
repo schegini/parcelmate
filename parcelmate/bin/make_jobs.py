@@ -44,7 +44,7 @@ if __name__ == '__main__':
         os.makedirs(outdir)
 
     for path in paths:
-        job_name = os.path.basename(path)[:-4]
+        job_name = os.path.basename(path).replace('.yaml', '')
         filename = outdir + '/' + job_name + '.pbs'
         with open(filename, 'w') as f:
             f.write(base % (job_name, job_name, time, memory, n_cores))
@@ -57,4 +57,4 @@ if __name__ == '__main__':
             if exclude:
                 f.write('#SBATCH --exclude=%s\n' % exclude)
             f.write('\n\nset -e\n\n')
-            f.write('python -m parcelmate.bin.main %s\n' % path)
+            f.write('python3 -m parcelmate.bin.main %s\n' % path)

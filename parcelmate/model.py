@@ -466,13 +466,13 @@ def run_connectivity(
         _data_kwargs = copy.deepcopy(data_kwargs)
         if domain == 'wikitext':
             _data_kwargs.update(dict(
-                dataset='wikitext',
+                dataset='Salesforce/wikitext',
                 tokenizer= tokenizer,
                 name='wikitext-103-raw-v1',
             ))
         elif domain == 'bookcorpus':
             _data_kwargs.update(dict(
-                dataset='bookcorpus'
+                dataset='bookcorpus/bookcorpus'
             ))
         elif domain == 'agnews':
             _data_kwargs.update(dict(
@@ -496,7 +496,7 @@ def run_connectivity(
             ))
         else:
             raise ValueError('Unrecognized input data name: %s' % domain)
-        _data_kwargs['trust_remote_code'] = True
+
         _data_kwargs['tokenizer'] = tokenizer
 
         input_ids, attention_mask = get_dataset(

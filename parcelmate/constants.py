@@ -10,7 +10,7 @@ SAMPLE_NAME = 'sample'
 N_SAMPLES = 4
 N_TOKENS = 100000
 EXTENSION = '.h5'
-INPUT_NAME_RE = re.compile('(%s|%s)_(.+)_(%s\d+|avg)%s' % (
+INPUT_NAME_RE = re.compile(r'(%s|%s)_(.+)_(%s\d+|avg)%s' % (
     CONNECTIVITY_NAME, PARCELLATION_NAME, SAMPLE_NAME, EXTENSION)
 )
 

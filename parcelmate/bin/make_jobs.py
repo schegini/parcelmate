@@ -66,6 +66,9 @@ if __name__ == '__main__':
             f.write('        export PATH="$HOME/.local/bin:$PATH"\n')
             f.write('    fi\n')
             f.write('fi\n\n')
-            # Sync venv and run
+            # cd to project root and sync venv
+            project_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            f.write('cd %s\n' % project_dir)
             f.write('uv sync\n')
-            f.write('uv run python -m parcelmate.bin.main %s\n' % path)
+            abs_path = os.path.abspath(path)
+            f.write('uv run python -m parcelmate.bin.main %s\n' % abs_path)

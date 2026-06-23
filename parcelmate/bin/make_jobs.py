@@ -24,6 +24,7 @@ if __name__ == '__main__':
     argparser.add_argument('-a', '--slurm_account', default=None, help='Value for SLURM --account setting, if applicable')
     argparser.add_argument('-P', '--slurm_partition', default=None, help='Value for SLURM --partition setting, if applicable')
     argparser.add_argument('-e', '--exclude', nargs='+', help='Nodes to exclude')
+    argparser.add_argument('-C', '--constraint', default=None, help='Value for SLURM --constraint setting (e.g. GPU_CC>=7.5, GPU_TYP:A100)')
     argparser.add_argument('-o', '--outdir', default='./', help='Directory in which to place generated batch scripts')
     args = argparser.parse_args()
 
@@ -34,6 +35,7 @@ if __name__ == '__main__':
     use_gpu = args.use_gpu
     slurm_account = args.slurm_account
     slurm_partition = args.slurm_partition
+    slurm_constraint = args.constraint
     if args.exclude:
         exclude = ','.join(args.exclude)
     else:
@@ -54,6 +56,8 @@ if __name__ == '__main__':
                 f.write('#SBATCH --account=%s\n' % slurm_account)
             if slurm_partition:
                 f.write('#SBATCH --partition=%s\n' % slurm_partition)
+            if slurm_constraint:
+                f.write('#SBATCH --constraint=%s\n' % slurm_constraint)
             if exclude:
                 f.write('#SBATCH --exclude=%s\n' % exclude)
             f.write('\n\nset -e\n\n')

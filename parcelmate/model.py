@@ -472,7 +472,7 @@ def run_connectivity(
             ))
         elif domain == 'bookcorpus':
             _data_kwargs.update(dict(
-                dataset='bookcorpus/bookcorpus'
+                dataset='Yuti/bookcorpus'
             ))
         elif domain == 'agnews':
             _data_kwargs.update(dict(

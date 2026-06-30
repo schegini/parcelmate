@@ -66,6 +66,91 @@ srun --account=your_group_account --partition=mypartition --gres=gpu:h100:1 --pt
 srun --account=your_group_account --partition=mypartition --gres=gpu:1 --constraint=80G --pty bash
 ```
 
+## Running Parcelmate Jobs
+
+The full workflow to run a config on the cluster:
+
+```bash
+# 1. Connect to the LOGIN node. Only `sc` has the SLURM client (sbatch/srun/squeue).
+#    `scdt` is data-transfer only and will report "Command 'sbatch' not found".
+ssh <CSID>@sc.stanford.edu
+cd ~/parcelmate
+
+# 2. Generate the batch script. The -a/-P/-g flags are baked into the .pbs as
+#    #SBATCH --account / --partition / --gres directives.
+python3 -m parcelmate.bin.make_jobs parcelmate/configs/cory-shain.yaml -g -a nlp -P sphinx
+
+# 3. Submit the script with sbatch.
+sbatch cory-shain.pbs
+
+# 4. Monitor and read output.
+squeue -u <CSID>            # or: pestat -u <CSID> -G
+tail -f cory-shain-*.out    # job stdout/stderr lands in ~/parcelmate
+```
+
+> **Submit `.pbs` files with `sbatch`, not `srun`.**
+> - A `.pbs` file is a batch script. `sbatch script.pbs` parses its `#SBATCH`
+>   directives and queues the job. `srun script.pbs` instead tries to *execute the
+>   file as a command* and ignores the directives entirely.
+> - Because the account/partition/GPU are already in the script, you do **not**
+>   pass `--account`/`--partition`/`--gres` to `sbatch`.
+> - Do not submit from inside an interactive `srun --pty bash` session — that shell
+>   already holds the allocation's resources, so the nested job hangs with
+>   "Requested nodes are busy".
+
+### Running interactively with `srun`
+
+Use `srun` for real-time work — prototyping, debugging, or watching output live —
+rather than for submitting the `.pbs` script. With `srun` you run the **actual
+command** (the python module), not the `.pbs` file.
+
+**Option A — interactive shell, then run by hand:**
+
+```bash
+# from the sc login node; this drops you onto a compute node with the GPU held by THIS shell
+srun --account=nlp --partition=sphinx --gres=gpu:1 --pty bash
+
+cd ~/parcelmate
+uv sync
+uv run python -m parcelmate.bin.main parcelmate/configs/cory-shain.yaml
+```
+
+Once you have the shell, run the python command directly — do **not** `srun`
+again inside it (that nests an allocation and hangs with "Requested nodes are busy").
+
+**Option B — run a command in one shot (no interactive shell):**
+
+```bash
+srun --account=nlp --partition=sphinx --gres=gpu:1 \
+  bash -c 'cd ~/parcelmate && uv sync && uv run python -m parcelmate.bin.main parcelmate/configs/cory-shain.yaml'
+```
+
+This blocks your terminal and streams output live until the job finishes.
+
+**`sbatch` vs `srun` at a glance:**
+
+| | `sbatch cory-shain.pbs` | `srun ... --pty bash` |
+|---|---|---|
+| Runs | the `.pbs` script unattended | a command you type, interactively |
+| Survives logout | yes | no (dies when shell closes) |
+| Best for | real/long runs | debugging, quick tests, live output |
+| What you pass | the script file | the python command directly |
+
+For real runs, prefer `sbatch`. Reach for `srun` only when you want to sit on a
+node and iterate.
+
+### Cleaning up outputs
+
+Job logs (`*.out`) and the pipeline `output_dir` (e.g. `test/` or `results/`,
+set in the config) accumulate in `~/parcelmate`. To clear them without touching
+code:
+
+```bash
+cd ~/parcelmate
+rm -f cory-shain*.out cory-shain*.pbs   # SLURM logs + generated scripts
+rm -rf test                             # pipeline output_dir (check your config first)
+```
+
 ## Usage Policy
 
 > **Important**

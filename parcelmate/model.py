@@ -471,8 +471,12 @@ def run_connectivity(
                 name='wikitext-103-raw-v1',
             ))
         elif domain == 'bookcorpus':
+            # Load the parquet files directly via the packaged 'parquet' builder so
+            # datasets never attempts dataset-script resolution (the repo's legacy
+            # bookcorpus.py script is rejected by datasets >= 3.x).
             _data_kwargs.update(dict(
-                dataset='Yuti/bookcorpus'
+                dataset='parquet',
+                data_files='hf://datasets/Yuti/bookcorpus/data/train-*.parquet',
             ))
         elif domain == 'agnews':
             _data_kwargs.update(dict(
@@ -483,8 +487,11 @@ def run_connectivity(
                 dataset='codeparrot/codeparrot-clean'
             ))
         elif domain == 'tldr17':
+            # webis/tldr-17 is script-only; load HF's auto-converted parquet branch
+            # directly via the packaged 'parquet' builder to avoid script resolution.
             _data_kwargs.update(dict(
-                dataset='webis/tldr-17'
+                dataset='parquet',
+                data_files='hf://datasets/webis/tldr-17@refs%2Fconvert%2Fparquet/default/partial-train/*.parquet'
             ))
         elif domain == 'random':
             _data_kwargs.update(dict(

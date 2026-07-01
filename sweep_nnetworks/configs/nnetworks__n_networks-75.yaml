@@ -1,0 +1,4 @@
+output_dir: /nlp/scr/schegini/parcelmate/sweeps/nnetworks/n_networks-75
+parcellation:
+  connectivity_pca_components: 200
+  n_networks: 75

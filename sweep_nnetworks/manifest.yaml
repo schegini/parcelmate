@@ -1,0 +1,23 @@
+name: nnetworks
+output_root: /nlp/scr/schegini/parcelmate/sweeps/nnetworks
+runs:
+- tag: n_networks-25
+  params:
+    parcellation.n_networks: 25
+  config_path: /sailhome/schegini/parcelmate/sweep_nnetworks/configs/nnetworks__n_networks-25.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/nnetworks/n_networks-25
+- tag: n_networks-50
+  params:
+    parcellation.n_networks: 50
+  config_path: /sailhome/schegini/parcelmate/sweep_nnetworks/configs/nnetworks__n_networks-50.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/nnetworks/n_networks-50
+- tag: n_networks-75
+  params:
+    parcellation.n_networks: 75
+  config_path: /sailhome/schegini/parcelmate/sweep_nnetworks/configs/nnetworks__n_networks-75.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/nnetworks/n_networks-75
+- tag: n_networks-100
+  params:
+    parcellation.n_networks: 100
+  config_path: /sailhome/schegini/parcelmate/sweep_nnetworks/configs/nnetworks__n_networks-100.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/nnetworks/n_networks-100

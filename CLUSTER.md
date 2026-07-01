@@ -151,6 +151,93 @@ rm -f cory-shain*.out cory-shain*.pbs   # SLURM logs + generated scripts
 rm -rf test                             # pipeline output_dir (check your config first)
 ```
 
+## Running Sweeps
+
+To try several hyperparameter values at once (rather than editing one config by
+hand and resubmitting), use the sweep harness. It generates one config + one
+`.pbs` per grid point, submits them all, and collects each run's plots into a
+single dashboard for side-by-side review.
+
+Everything below runs on the `sc` login node, the same as `make_jobs` — it is
+pure file I/O plus `sbatch` calls (no compute), so it is headnode-safe. The
+actual pipeline work happens on compute nodes via SLURM.
+
+### 1. Write a sweep spec
+
+A sweep spec is a small YAML file (see
+`parcelmate/configs/sweep_nnetworks.yaml`) with a base config and a grid:
+
+```yaml
+base_config: parcelmate/configs/cory-shain.yaml
+name: nnetworks
+output_root: /nlp/scr/schegini/parcelmate/sweeps/nnetworks   # per-run outputs go here
+grid:
+  parcellation.n_networks: [25, 50, 75, 100]
+```
+
+- Dotted keys index into the base config (`parcellation.n_networks` sets
+  `parcellation: {n_networks: ...}`). Any config key works.
+- Each key maps to a list; the sweep runs the **cartesian product** of all keys,
+  so adding a second key multiplies the number of runs.
+- Each run gets its own `output_dir` under `output_root`, tagged by its params
+  (e.g. `.../nnetworks/n_networks-50`), so runs never clobber each other.
+
+### 2. Generate + submit the sweep
+
+```bash
+ssh <CSID>@sc.stanford.edu
+cd ~/parcelmate
+git pull    # ensure sweep.py / collect.py are present
+
+# Generates configs + .pbs AND sbatches them. -a/-P/-g are baked into every
+# .pbs exactly as with make_jobs.
+python3 -m parcelmate.bin.sweep parcelmate/configs/sweep_nnetworks.yaml -g -a nlp -P sphinx
+```
+
+This creates a `sweep_<name>/` directory holding `configs/`, `jobs/`, and a
+`manifest.yaml` that records every run's params, config path, and output_dir.
+
+- Add `--no-submit` to generate everything **without** submitting (inspect the
+  configs/`.pbs` first, then `for f in sweep_<name>/jobs/*.pbs; do sbatch "$f"; done`).
+- SLURM flags (`-t`, `-m`, `-n`, `-g`, `-a`, `-P`, `-e`, `-C`) match `make_jobs`
+  and apply to every generated job.
+
+Monitor as usual:
+
+```bash
+squeue -u <CSID>            # one job per grid point
+```
+
+### 3. Collect outputs for review
+
+Once the jobs finish (or to check partial progress), build the dashboard:
+
+```bash
+python3 -m parcelmate.bin.collect sweep_nnetworks/manifest.yaml
+# -> sweep_nnetworks/dashboard.html  (plots laid out side by side)
+# -> sweep_nnetworks/index.md        (same, renders in VSCode/GitHub)
+```
+
+Runs that have not produced plots yet show "no outputs yet", so it is safe to
+re-run `collect` at any time.
+
+The `sc` headnode is headless, so you cannot open `dashboard.html` there
+directly. Options:
+
+- **VSCode Remote-SSH** into `sc` and open `sweep_nnetworks/index.md` in the
+  markdown preview — images render in place.
+- **Open OnDemand** (https://sc.stanford.edu) to browse the file via the portal.
+- **Pull it to your local machine** via the data-transfer host and open locally.
+  The dashboard links plots by path relative to the sweep dir, and the plots
+  themselves live under `output_root`, so copy both for a self-contained view:
+
+  ```bash
+  rsync -av <CSID>@scdt.stanford.edu:~/parcelmate/sweep_nnetworks/ ./sweep_nnetworks/
+  rsync -av <CSID>@scdt.stanford.edu:/nlp/scr/schegini/parcelmate/sweeps/nnetworks/ \
+    ./nlp/scr/schegini/parcelmate/sweeps/nnetworks/
+  open sweep_nnetworks/dashboard.html
+  ```
+
 ## Usage Policy
 
 > **Important**

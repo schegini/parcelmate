@@ -1,0 +1,20 @@
+# Example sweep spec for parcelmate/bin/sweep.py
+#
+# Generates one full-pipeline run per value of parcellation.n_networks, each writing
+# to its own output_dir under `output_root`. Run with:
+#
+#   python -m parcelmate.bin.sweep parcelmate/configs/sweep_nnetworks.yaml -g -m 16
+#
+# (add --no-submit to generate configs + .pbs without sbatch-ing them)
+
+base_config: parcelmate/configs/cory-shain.yaml
+name: nnetworks
+
+# Where per-run output_dirs are placed. Defaults to a `nnetworks/` dir next to the
+# base config's output_dir if omitted.
+output_root: /nlp/scr/schegini/parcelmate/sweeps/nnetworks
+
+# Dotted keys index into the base config. Each key maps to a list of values; the
+# sweep runs the cartesian product of all keys.
+grid:
+  parcellation.n_networks: [25, 50, 75, 100]

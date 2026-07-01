@@ -1,4 +1,3 @@
-import sys
 import os
 import argparse
 
@@ -11,7 +10,59 @@ base = """#!/bin/bash
 #SBATCH --ntasks=%d
 """
 
- 
+
+def write_job(
+        path,
+        outdir='./',
+        time=24,
+        n_cores=1,
+        memory=8,
+        use_gpu=False,
+        slurm_account=None,
+        slurm_partition=None,
+        slurm_constraint=None,
+        exclude=None,
+):
+    """Generate a single SLURM batch script (`.pbs`) that runs the pipeline for one config.
+
+    Returns the path to the generated `.pbs` file.
+    """
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    if isinstance(exclude, (list, tuple)):
+        exclude = ','.join(exclude)
+
+    job_name = os.path.splitext(os.path.basename(path))[0]
+    filename = os.path.join(outdir, job_name + '.pbs')
+    with open(filename, 'w') as f:
+        f.write(base % (job_name, job_name, time, memory, n_cores))
+        if use_gpu:
+            f.write('#SBATCH --gres=gpu:1\n')
+        if slurm_account:
+            f.write('#SBATCH --account=%s\n' % slurm_account)
+        if slurm_partition:
+            f.write('#SBATCH --partition=%s\n' % slurm_partition)
+        if slurm_constraint:
+            f.write('#SBATCH --constraint=%s\n' % slurm_constraint)
+        if exclude:
+            f.write('#SBATCH --exclude=%s\n' % exclude)
+        f.write('\n\nset -e\n\n')
+        # Ensure uv is available (installs to ~/.local/bin if missing)
+        f.write('if ! command -v uv &> /dev/null; then\n')
+        f.write('    if [ -x "$HOME/.local/bin/uv" ]; then\n')
+        f.write('        export PATH="$HOME/.local/bin:$PATH"\n')
+        f.write('    else\n')
+        f.write('        curl -LsSf https://astral.sh/uv/install.sh | sh\n')
+        f.write('        export PATH="$HOME/.local/bin:$PATH"\n')
+        f.write('    fi\n')
+        f.write('fi\n\n')
+        # Sync venv and run
+        f.write('uv sync\n')
+        f.write('uv run python -m parcelmate.bin.main %s\n' % path)
+
+    return filename
+
+
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser('''
     Generate SLURM batch jobs to run parcellations specified in one or more config (YAML) files.
@@ -28,48 +79,16 @@ if __name__ == '__main__':
     argparser.add_argument('-o', '--outdir', default='./', help='Directory in which to place generated batch scripts')
     args = argparser.parse_args()
 
-    paths = args.paths
-    time = args.time
-    n_cores = args.n_cores
-    memory = args.memory
-    use_gpu = args.use_gpu
-    slurm_account = args.slurm_account
-    slurm_partition = args.slurm_partition
-    slurm_constraint = args.constraint
-    if args.exclude:
-        exclude = ','.join(args.exclude)
-    else:
-        exclude = []
-    outdir = args.outdir
-
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-
-    for path in paths:
-        job_name = os.path.splitext(os.path.basename(path))[0]
-        filename = outdir + '/' + job_name + '.pbs'
-        with open(filename, 'w') as f:
-            f.write(base % (job_name, job_name, time, memory, n_cores))
-            if use_gpu:
-                f.write('#SBATCH --gres=gpu:1\n')
-            if slurm_account:
-                f.write('#SBATCH --account=%s\n' % slurm_account)
-            if slurm_partition:
-                f.write('#SBATCH --partition=%s\n' % slurm_partition)
-            if slurm_constraint:
-                f.write('#SBATCH --constraint=%s\n' % slurm_constraint)
-            if exclude:
-                f.write('#SBATCH --exclude=%s\n' % exclude)
-            f.write('\n\nset -e\n\n')
-            # Ensure uv is available (installs to ~/.local/bin if missing)
-            f.write('if ! command -v uv &> /dev/null; then\n')
-            f.write('    if [ -x "$HOME/.local/bin/uv" ]; then\n')
-            f.write('        export PATH="$HOME/.local/bin:$PATH"\n')
-            f.write('    else\n')
-            f.write('        curl -LsSf https://astral.sh/uv/install.sh | sh\n')
-            f.write('        export PATH="$HOME/.local/bin:$PATH"\n')
-            f.write('    fi\n')
-            f.write('fi\n\n')
-            # Sync venv and run
-            f.write('uv sync\n')
-            f.write('uv run python -m parcelmate.bin.main %s\n' % path)
+    for path in args.paths:
+        write_job(
+            path,
+            outdir=args.outdir,
+            time=args.time,
+            n_cores=args.n_cores,
+            memory=args.memory,
+            use_gpu=args.use_gpu,
+            slurm_account=args.slurm_account,
+            slurm_partition=args.slurm_partition,
+            slurm_constraint=args.constraint,
+            exclude=args.exclude,
+        )

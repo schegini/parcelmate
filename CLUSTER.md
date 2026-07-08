@@ -276,6 +276,67 @@ themselves live under `output_root`, so copy both for a self-contained view:
 
 
 
+### Sweeping the subnetwork knockout controls (Project 3)
+
+The knockout controls are part of the default pipeline: `main.py` with the
+default `all` steps runs `subnetwork_knockout` at the end, and every generated
+`.pbs` calls `main.py <config>` with no `-s` flag. So **any sweep whose base
+config includes a `knockout:` block runs the knockout automatically** — no code
+or job-template changes needed. A ready-made base config and spec ship in the
+repo:
+
+- `parcelmate/configs/knockout_cluster.yaml` — base config (gpt2, a few domains,
+  a `knockout:` block; see the README for every knob).
+- `parcelmate/configs/sweep_knockout.yaml` — spec that sweeps
+  `knockout.knockout_mode: [mean, zero]` (mean-out vs zero-out).
+
+Full workflow after logging in:
+
+```bash
+ssh <CSID>@sc.stanford.edu
+cd ~/parcelmate
+git pull
+
+# Optional: inspect what will run first.
+python3 -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout.yaml --no-submit
+less sweep_knockout/configs/*.yaml
+
+# Generate configs + .pbs and submit (GPU node; use your account/partition).
+python3 -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout.yaml -g -a nlp -P sphinx -t 24 -m 16
+
+squeue -u <CSID>            # one job per grid point (mean, zero)
+```
+
+Each run resumes from any connectivity/parcellation outputs already on disk
+(`overwrite` defaults off), so re-submitting only recomputes what is missing.
+
+**Watch the cost.** The knockout step re-runs connectivity + loss once per
+condition: one per network in `knockout.networks`, plus `1 + n_baseline` per
+network, plus the union — each over every domain in `connectivity.domains`.
+Keep `networks` short (e.g. `[0, 1, 2]`) and `n_baseline` small (e.g. 3) while
+iterating; cap the loss pass with `knockout.loss_n_tokens`. If a knockout
+selects more than half of all units, its random baseline is skipped (no equal
+sized disjoint set exists) and the job logs a warning — raise
+`knockout.knockout_thresh` toward 1.0 for a sparser, baseline-able selection.
+
+Collect results the same way as any sweep:
+
+```bash
+python3 -m parcelmate.bin.collect sweep_knockout/manifest.yaml
+```
+
+The dashboard shows the per-domain knockout-loss bar charts
+(`plots/knockout/knockout_<domain>.png`: healthy vs subnetwork-knockout vs
+baseline). The exact numbers live in each run's
+`<output_dir>/knockout/loss_summary.csv` — pull them alongside the plots:
+
+```bash
+rsync -av <CSID>@scdt.stanford.edu:/nlp/scr/schegini/parcelmate/sweeps/knockout/ \
+  ./nlp/scr/schegini/parcelmate/sweeps/knockout/
+```
+
+
+
 ## Usage Policy
 
 > **Important**

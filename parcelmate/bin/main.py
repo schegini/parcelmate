@@ -61,6 +61,12 @@ if __name__ == '__main__':
         run_knockout(
             output_dir=cfg.get('output_dir', OUTPUT_DIR),
             connectivity_kwargs=cfg.get('connectivity', {}),
-            **cfg.get('subnetwork_extraction', {})
+            overwrite=overwrite,
+            **cfg.get('knockout', {})
+        )
+
+    if 'plot_knockout' in steps:
+        plot_knockout_loss(
+            output_dir=cfg.get('output_dir', OUTPUT_DIR)
         )
 

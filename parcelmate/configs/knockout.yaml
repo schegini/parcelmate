@@ -1,0 +1,33 @@
+# Small, fully-offline smoke test for the Project 3 knockout controls.
+# Datasets `whitespace` and `random` are synthetic (no download); only the
+# gpt2 weights need to be available.
+#
+#   python -m parcelmate.bin.main parcelmate/configs/knockout.yaml \
+#       -s connectivity parcellation subnetwork_extraction subnetwork_knockout
+output_dir: results_knockout_test
+
+connectivity:
+  model_name: gpt2
+  domains: [whitespace, random]
+  seq_len: 64
+  batch_size: 2
+  n_samples: 1
+  n_tokens: 256
+
+parcellation:
+  n_networks: 4
+  n_samples: 3
+  connectivity_pca_components: 10
+
+subnetwork_extraction: {}
+
+knockout:
+  knockout_mode: mean      # 'mean' (clamp to cross-domain mean) or 'zero'
+  n_baseline: 2            # size-matched random controls per condition
+  baseline_seed: 0
+  networks: [0]            # restrict to first shared network for a fast test
+  include_union: true
+  include_healthy: true
+  eval_loss: true
+  loss_n_tokens: 256
+  steps: []                # skip per-condition stability plots in the smoke test

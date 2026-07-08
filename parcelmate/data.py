@@ -197,6 +197,7 @@ def correlate(X, rowvar=True, use_gpu=True):
     X -= X.mean(axis=0, keepdims=True)
     X /= np.linalg.norm(X, axis=0, keepdims=True)
 
+    use_gpu = use_gpu and torch.cuda.is_available()
     if use_gpu:
         X_ = torch.as_tensor(X)
         n_bytes = torch.cuda.get_device_properties(0).total_memory - torch.cuda.memory_allocated(0)

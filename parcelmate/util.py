@@ -29,6 +29,6 @@ def load_h5_data(path, verbose=True, indent=0):
     out = {}
     with h5py.File(path, 'r') as f:
         for key in f.keys():
-            out[key] = f[key][:]
+            out[key] = f[key][()]  # [()] reads both array and scalar datasets
 
     return out

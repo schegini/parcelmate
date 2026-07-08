@@ -8,7 +8,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA, FastICA
 from sklearn.cluster import MiniBatchKMeans
 import torch
-from transformers import AutoModel, AutoTokenizer
+import torch.nn.functional as F
+from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
 
 from parcelmate.constants import *
 from parcelmate.data import *
@@ -16,10 +17,21 @@ from parcelmate.util import *
 from parcelmate.plot import *
 
 
+def get_transformer_body(model):
+    """Return the transformer stack that exposes ``.h`` (blocks) and ``.drop``
+    (embedding dropout). ``AutoModel`` (e.g. GPT2Model) is itself the body,
+    while ``AutoModelForCausalLM`` (e.g. GPT2LMHeadModel) nests it under
+    ``.transformer``."""
+    if hasattr(model, 'transformer'):
+        return model.transformer
+    return model
+
+
 class PerturbedModel(torch.nn.Module):
     def __init__(self, model, perturbation_coordinates, perturbation_values=None, *args, **kwargs):
         super(PerturbedModel, self).__init__(*args, **kwargs)
         self.model = model
+        body = get_transformer_body(self.model)
         self.perturbation_coordinates = perturbation_coordinates
         if perturbation_values is None:  # Default to zero (knockout)
             perturbation_values = np.zeros(len(self.perturbation_coordinates))
@@ -29,7 +41,7 @@ class PerturbedModel(torch.nn.Module):
 
         layers_attr = 'h'
         layer_indices = np.unique(perturbation_coordinates[:, 0])  # 0th dimension is layer
-        layers = getattr(self.model, layers_attr)
+        layers = getattr(body, layers_attr)
         perturbation_coordinate_tensors = {}
         perturbation_value_tensors = {}
         for l_ix in layer_indices:
@@ -62,7 +74,7 @@ class PerturbedModel(torch.nn.Module):
         for l_ix in layer_indices:
             if l_ix == 0:
                 _l_ix = 'embedding'
-                source_layer = self.model.drop
+                source_layer = body.drop
             else:
                 _l_ix = l_ix - 1  # Shifted down bc of embedding layer
                 source_layer = layers[_l_ix]
@@ -72,7 +84,7 @@ class PerturbedModel(torch.nn.Module):
                 perturbation_values=self.perturbation_value_tensors[_l_ix]
             )
             if _l_ix == 'embedding':
-                self.model.drop = layer
+                body.drop = layer
             else:
                 layers[_l_ix] = layer
 
@@ -101,23 +113,56 @@ class PerturbedLayer(torch.nn.Module):
         return out
 
 
-def get_model_and_tokenizer(model_name, knockout_probs=None, knockout_thresh=0.5, coordinates=None):
-    model = AutoModel.from_pretrained(model_name)
-    if knockout_probs is not None:
-        assert coordinates is not None, 'coordinates must be provided if knockout_probs is not None'
-        sel = None
-        for ix in range(knockout_probs.shape[1]):
-            inv_mask_ = knockout_probs[:, ix] >= knockout_thresh
-            if sel is None:
-                sel = inv_mask_
-            else:
-                sel |= inv_mask_
-        perturbation_coordinates = coordinates[sel]
-        perturbation_values = None
+def select_knockout(coordinates, knockout_probs, knockout_thresh=0.5, network_ix=None):
+    """Build a boolean selection mask (and the matching coordinates) for a
+    knockout from soft network-membership probabilities.
+
+    ``knockout_probs`` is <n_units> (single network) or <n_units, n_networks>.
+    When ``network_ix`` is None and multiple networks are present, the selection
+    is the union of every network at/above ``knockout_thresh`` (the original
+    behavior); otherwise a single network column is used.
+    """
+    probs = np.asarray(knockout_probs)
+    if probs.ndim == 1:
+        sel = probs >= knockout_thresh
+    elif network_ix is None:
+        sel = (probs >= knockout_thresh).any(axis=1)
+    else:
+        sel = probs[:, network_ix] >= knockout_thresh
+    return coordinates[sel], sel
+
+
+def sample_baseline_selection(sel, seed=0):
+    """Given a knockout selection mask ``sel`` over all units, draw an equally
+    sized set of units uniformly at random from the *complement* (units that
+    were NOT knocked out), globally across all layers."""
+    sel = np.asarray(sel).astype(bool)
+    n = int(sel.sum())
+    complement_ix = np.where(~sel)[0]
+    assert n <= len(complement_ix), \
+        'Cannot draw %d baseline units from a complement of size %d' % (n, len(complement_ix))
+    rng = np.random.default_rng(seed)
+    chosen = rng.choice(complement_ix, size=n, replace=False)
+    baseline_sel = np.zeros_like(sel)
+    baseline_sel[chosen] = True
+    return baseline_sel
+
+
+def get_model_and_tokenizer(
+        model_name,
+        for_causal_lm=False,
+        perturbation_coordinates=None,
+        perturbation_values=None,
+):
+    if for_causal_lm:
+        model = AutoModelForCausalLM.from_pretrained(model_name)
+    else:
+        model = AutoModel.from_pretrained(model_name)
+    if perturbation_coordinates is not None and len(perturbation_coordinates) > 0:
         model = PerturbedModel(
             model,
             perturbation_coordinates=perturbation_coordinates,
-            perturbation_values=perturbation_values
+            perturbation_values=perturbation_values,
         )
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     return model, tokenizer
@@ -214,6 +259,66 @@ def get_timecourses(
     return dict(
         timecourses=timecourses,  # <n_neurons, n_tokens/n_components>
         coordinates=coordinates  # <n_neurons>
+    )
+
+
+def get_lm_loss(
+        model,
+        input_ids,
+        attention_mask,
+        batch_size=8,
+        verbose=True,
+        indent=0,
+        **kwargs
+):
+    """Compute mean next-token cross-entropy (and perplexity) over the given
+    inputs. Padding positions are excluded via the attention mask, and the loss
+    is token-weighted (not batch-averaged) so it is comparable across draws."""
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    model = model.to(device)
+    model.eval()
+    if verbose:
+        stderr('%sComputing LM loss\n' % (' ' * indent))
+    total_loss = 0.0
+    total_tokens = 0
+    B = int(math.ceil(input_ids.size(0) / batch_size))
+    indent += 2
+    with torch.no_grad():
+        for i in range(0, input_ids.size(0), batch_size):
+            if verbose:
+                stderr('\r%sBatch %d/%d' % (' ' * indent, i // batch_size + 1, B))
+            _input_ids = input_ids[i:i + batch_size].to(device)
+            _attention_mask = attention_mask[i:i + batch_size].to(device)
+            logits = model(
+                input_ids=_input_ids,
+                attention_mask=_attention_mask,
+                **kwargs
+            ).logits
+            # Shift so token t predicts token t+1.
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = _input_ids[..., 1:].contiguous()
+            shift_mask = _attention_mask[..., 1:].contiguous().reshape(-1)
+            loss = F.cross_entropy(
+                shift_logits.reshape(-1, shift_logits.size(-1)),
+                shift_labels.reshape(-1),
+                reduction='none'
+            )
+            loss = loss * shift_mask
+            total_loss += float(loss.sum().detach().cpu())
+            total_tokens += int(shift_mask.sum().detach().cpu())
+    if verbose:
+        stderr('\n')
+
+    model.to('cpu')
+    torch.cuda.empty_cache()
+
+    mean_loss = total_loss / max(total_tokens, 1)
+    perplexity = float(np.exp(mean_loss))
+
+    return dict(
+        loss=mean_loss,
+        perplexity=perplexity,
+        n_tokens=total_tokens
     )
 
 
@@ -407,6 +512,154 @@ def align_samples(
     return parcellation
 
 
+def resolve_domain_data_kwargs(domain, tokenizer, data_kwargs=None):
+    """Map a domain name to the ``get_dataset`` kwargs that load it."""
+    _data_kwargs = copy.deepcopy(data_kwargs) if data_kwargs else {}
+    if domain == 'wikitext':
+        _data_kwargs.update(dict(
+            dataset='Salesforce/wikitext',
+            name='wikitext-103-raw-v1',
+        ))
+    elif domain == 'bookcorpus':
+        # Load the parquet files directly via the packaged 'parquet' builder so
+        # datasets never attempts dataset-script resolution (the repo's legacy
+        # bookcorpus.py script is rejected by datasets >= 3.x).
+        _data_kwargs.update(dict(
+            dataset='parquet',
+            data_files='hf://datasets/Yuti/bookcorpus/data/train-*.parquet',
+        ))
+    elif domain == 'agnews':
+        _data_kwargs.update(dict(
+            dataset='fancyzhx/ag_news'
+        ))
+    elif domain == 'codeparrot':
+        _data_kwargs.update(dict(
+            dataset='codeparrot/codeparrot-clean'
+        ))
+    elif domain == 'tldr17':
+        # webis/tldr-17 is script-only; load HF's auto-converted parquet branch
+        # directly via the packaged 'parquet' builder to avoid script resolution.
+        _data_kwargs.update(dict(
+            dataset='parquet',
+            data_files='hf://datasets/webis/tldr-17@refs%2Fconvert%2Fparquet/default/partial-train/*.parquet'
+        ))
+    elif domain == 'random':
+        _data_kwargs.update(dict(
+            dataset='random'
+        ))
+    elif domain == 'whitespace':
+        _data_kwargs.update(dict(
+            dataset='whitespace'
+        ))
+    else:
+        raise ValueError('Unrecognized input data name: %s' % domain)
+
+    _data_kwargs['tokenizer'] = tokenizer
+
+    return _data_kwargs
+
+
+def compute_mean_activations(
+        model_name='gpt2',
+        output_dir=OUTPUT_DIR,
+        domains=('wikitext', 'bookcorpus', 'agnews', 'tldr17', 'codeparrot', 'random', 'whitespace'),
+        seq_len=1024,
+        n_tokens=None,
+        split='train',
+        take=100000,
+        wrap=True,
+        shuffle=True,
+        batch_size=8,
+        data_kwargs=None,
+        model_kwargs=None,
+        overwrite=False,
+        verbose=True,
+        indent=0
+):
+    """Compute each neuron's mean activation over a text sample spanning ALL
+    domains (a single cross-domain scalar per unit). Used as the "mean-out"
+    clamp value: knocking a neuron out sets it to this global mean rather than
+    to zero. Cached to ``mean_activations.h5`` under ``output_dir``.
+
+    Returns ``(mean_activations, coordinates)`` aligned row-for-row with the
+    coordinates produced by ``get_timecourses``.
+    """
+    if model_kwargs is None:
+        model_kwargs = {}
+    if n_tokens is None:
+        n_tokens = (N_TOKENS // (seq_len * batch_size)) * seq_len * batch_size
+
+    filepath = os.path.join(output_dir, '%s%s' % (MEAN_ACTIVATION_NAME, EXTENSION))
+    if os.path.exists(filepath) and not overwrite:
+        data = load_h5_data(filepath, verbose=verbose, indent=indent)
+        if 'mean_activations' in data and 'coordinates' in data:
+            return data['mean_activations'], data['coordinates']
+
+    if isinstance(domains, str):
+        domains = (domains,)
+
+    if verbose:
+        stderr('%sComputing cross-domain mean activations\n' % (' ' * indent))
+    indent += 2
+
+    model, tokenizer = get_model_and_tokenizer(model_name)
+
+    running_sum = None
+    running_count = 0
+    coordinates = None
+    for domain in domains:
+        if verbose:
+            stderr('%sDomain %s\n' % (' ' * indent, domain))
+        _data_kwargs = resolve_domain_data_kwargs(domain, tokenizer, data_kwargs)
+        input_ids, attention_mask = get_dataset(
+            n_tokens=n_tokens,
+            split=split,
+            take=take,
+            seq_len=seq_len,
+            wrap=wrap,
+            shuffle=shuffle,
+            verbose=verbose,
+            indent=indent + 2,
+            **_data_kwargs
+        )
+        # Raw activations only: no bandpass / PCA / ICA transforms.
+        out = get_timecourses(
+            model,
+            input_ids,
+            attention_mask,
+            batch_size=batch_size,
+            highpass=None,
+            lowpass=None,
+            verbose=verbose,
+            indent=indent + 2,
+            **model_kwargs
+        )
+        timecourses = out['timecourses']  # <n_units, n_tokens>
+        coordinates = out['coordinates']
+        # Weight by token count so domains contribute proportionally.
+        if running_sum is None:
+            running_sum = timecourses.sum(axis=1).astype(np.float64)
+        else:
+            running_sum += timecourses.sum(axis=1)
+        running_count += timecourses.shape[1]
+
+    mean_activations = (running_sum / max(running_count, 1)).astype(np.float32)
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    save_h5_data(
+        dict(
+            mean_activations=mean_activations,
+            coordinates=coordinates
+        ),
+        filepath,
+        verbose=verbose,
+        indent=indent
+    )
+
+    return mean_activations, coordinates
+
+
 def run_connectivity(
         model_name='gpt2',
         output_dir=OUTPUT_DIR,
@@ -427,8 +680,10 @@ def run_connectivity(
         eps=1e-3,
         data_kwargs=None,
         model_kwargs=None,
-        knockout_filepath=None,
-        knockout_thresh=0.5,
+        perturbation_coordinates=None,
+        perturbation_values=None,
+        eval_loss=False,
+        loss_n_tokens=None,
         overwrite=False,
         verbose=True,
         indent=0
@@ -442,69 +697,24 @@ def run_connectivity(
 
     connectivity_dir = os.path.join(output_dir, CONNECTIVITY_NAME)
 
-    knockout_probs = knockout_coordinates = None
-    if knockout_filepath is not None:
-        data = load_h5_data(knockout_filepath, verbose=verbose, indent=indent)
-        assert 'parcellation' in data, 'If provided, knockout_filepath must contain the field "parcellation"'
-        knockout_probs = data['parcellation']
-        knockout_coordinates = data['coordinates']
-
+    # A single model (loaded with an LM head when loss is requested) is reused
+    # for both the connectivity and loss passes so the perturbation is identical.
     model, tokenizer = get_model_and_tokenizer(
         model_name,
-        knockout_probs=knockout_probs,
-        coordinates=knockout_coordinates,
-        knockout_thresh=knockout_thresh
+        for_causal_lm=eval_loss,
+        perturbation_coordinates=perturbation_coordinates,
+        perturbation_values=perturbation_values,
     )
 
     if isinstance(domains, str):
         domains = (domains,)
 
+    losses = {}
     for domain in domains:
         if verbose:
             stderr('%sRunning connectivity for %s\n' % (' ' * indent, domain))
         indent += 2
-        _data_kwargs = copy.deepcopy(data_kwargs)
-        if domain == 'wikitext':
-            _data_kwargs.update(dict(
-                dataset='Salesforce/wikitext',
-                tokenizer= tokenizer,
-                name='wikitext-103-raw-v1',
-            ))
-        elif domain == 'bookcorpus':
-            # Load the parquet files directly via the packaged 'parquet' builder so
-            # datasets never attempts dataset-script resolution (the repo's legacy
-            # bookcorpus.py script is rejected by datasets >= 3.x).
-            _data_kwargs.update(dict(
-                dataset='parquet',
-                data_files='hf://datasets/Yuti/bookcorpus/data/train-*.parquet',
-            ))
-        elif domain == 'agnews':
-            _data_kwargs.update(dict(
-                dataset='fancyzhx/ag_news'
-            ))
-        elif domain == 'codeparrot':
-            _data_kwargs.update(dict(
-                dataset='codeparrot/codeparrot-clean'
-            ))
-        elif domain == 'tldr17':
-            # webis/tldr-17 is script-only; load HF's auto-converted parquet branch
-            # directly via the packaged 'parquet' builder to avoid script resolution.
-            _data_kwargs.update(dict(
-                dataset='parquet',
-                data_files='hf://datasets/webis/tldr-17@refs%2Fconvert%2Fparquet/default/partial-train/*.parquet'
-            ))
-        elif domain == 'random':
-            _data_kwargs.update(dict(
-                dataset='random'
-            ))
-        elif domain == 'whitespace':
-            _data_kwargs.update(dict(
-                dataset='whitespace'
-            ))
-        else:
-            raise ValueError('Unrecognized input data name: %s' % domain)
-
-        _data_kwargs['tokenizer'] = tokenizer
+        _data_kwargs = resolve_domain_data_kwargs(domain, tokenizer, data_kwargs)
 
         input_ids, attention_mask = get_dataset(
             n_tokens=n_tokens * n_samples,
@@ -615,7 +825,40 @@ def run_connectivity(
                 verbose=verbose,
                 indent=indent
             )
+
+        if eval_loss:
+            _input_ids = input_ids
+            _attention_mask = attention_mask
+            if loss_n_tokens is not None:
+                n_seq = int(np.ceil(loss_n_tokens / seq_len))
+                _input_ids = _input_ids[:n_seq]
+                _attention_mask = _attention_mask[:n_seq]
+            loss_out = get_lm_loss(
+                model,
+                _input_ids,
+                _attention_mask,
+                batch_size=batch_size,
+                verbose=verbose,
+                indent=indent,
+            )
+            losses[domain] = loss_out
+            if verbose:
+                stderr('%sLoss=%.4f  Perplexity=%.2f  (%s)\n' % (
+                    ' ' * indent, loss_out['loss'], loss_out['perplexity'], domain))
         indent -= 2
+
+    if eval_loss and losses:
+        loss_data = {}
+        for domain, loss_out in losses.items():
+            loss_data['%s_loss' % domain] = np.float32(loss_out['loss'])
+            loss_data['%s_perplexity' % domain] = np.float32(loss_out['perplexity'])
+            loss_data['%s_n_tokens' % domain] = np.int64(loss_out['n_tokens'])
+        save_h5_data(
+            loss_data,
+            os.path.join(output_dir, '%s%s' % (LOSS_NAME, EXTENSION)),
+            verbose=verbose,
+            indent=indent
+        )
 
 
 def run_parcellation(
@@ -782,51 +1025,274 @@ def run_subnetwork_extraction(
     )
 
 
-def run_knockout(
-        output_dir=os.path.join(OUTPUT_DIR, KNOCKOUT_NAME),
-        model_name='gpt2',
+def _run_knockout_condition(
+        name,
+        knockout_root,
+        model_name,
+        coordinates,
+        sel,
+        mean_activations=None,
         connectivity_kwargs=None,
-        steps=('plot_stability',),
+        eval_loss=True,
+        loss_n_tokens=None,
+        steps=(),
+        overwrite=False,
         verbose=True,
         indent=0
 ):
-    if connectivity_kwargs is None:
-        connectivity_kwargs = {}
+    """Run one knockout condition (a single selection ``sel`` over all units)
+    into its own subdirectory ``knockout_root/name``. When ``mean_activations``
+    is provided the knocked-out units are clamped to their cross-domain mean
+    ("mean-out"); otherwise they are zeroed."""
+    condition_dir = os.path.join(knockout_root, name)
+    if sel is None:
+        perturbation_coordinates = None
+        perturbation_values = None
+        n_ko = 0
+    else:
+        sel = np.asarray(sel).astype(bool)
+        perturbation_coordinates = coordinates[sel]
+        n_ko = int(sel.sum())
+        if mean_activations is not None:
+            perturbation_values = np.asarray(mean_activations)[sel]
+        else:
+            perturbation_values = None
+    if verbose:
+        stderr('%sCondition %s (%d units knocked out)\n' % (' ' * indent, name, n_ko))
+
+    run_connectivity(
+        model_name=model_name,
+        output_dir=condition_dir,
+        perturbation_coordinates=perturbation_coordinates,
+        perturbation_values=perturbation_values,
+        eval_loss=eval_loss,
+        loss_n_tokens=loss_n_tokens,
+        overwrite=overwrite,
+        verbose=verbose,
+        indent=indent + 2,
+        **(connectivity_kwargs or {})
+    )
+
+    for step in steps:
+        if step == 'plot_stability':
+            plot_stability(
+                output_dir=condition_dir,
+                verbose=verbose,
+                indent=indent + 2
+            )
+        else:
+            raise ValueError('Unrecognized step: %s' % step)
+
+
+def _run_baselines(
+        prefix,
+        knockout_root,
+        model_name,
+        coordinates,
+        sel,
+        mean_activations=None,
+        connectivity_kwargs=None,
+        n_baseline=3,
+        baseline_seed=0,
+        eval_loss=True,
+        loss_n_tokens=None,
+        steps=(),
+        overwrite=False,
+        verbose=True,
+        indent=0
+):
+    """Run ``n_baseline`` size-matched random controls for the knockout ``sel``.
+    Skips (with a warning) when the knockout is larger than its complement, in
+    which case a disjoint equal-sized random draw cannot exist."""
+    sel = np.asarray(sel).astype(bool)
+    n_ko = int(sel.sum())
+    n_complement = int((~sel).sum())
+    if n_ko > n_complement:
+        if verbose:
+            stderr('%sSkipping baselines for %s: %d units knocked out exceeds '
+                   'complement of %d\n' % (' ' * indent, prefix, n_ko, n_complement))
+        return
+    for s in range(n_baseline):
+        baseline_sel = sample_baseline_selection(sel, seed=baseline_seed + s)
+        _run_knockout_condition(
+            '%s_%s%d' % (prefix, BASELINE_NAME, s),
+            knockout_root, model_name, coordinates, sel=baseline_sel,
+            mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
+            eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+            overwrite=overwrite, verbose=verbose, indent=indent
+        )
+
+
+def run_knockout(
+        output_dir=OUTPUT_DIR,
+        model_name='gpt2',
+        connectivity_kwargs=None,
+        knockout_thresh=0.5,
+        knockout_mode='mean',
+        n_baseline=3,
+        baseline_seed=0,
+        networks=None,
+        include_union=True,
+        include_healthy=True,
+        eval_loss=True,
+        loss_n_tokens=None,
+        steps=('plot_stability',),
+        overwrite=False,
+        verbose=True,
+        indent=0
+):
+    """Knock out each extracted subnetwork individually (plus, optionally, the
+    union of all of them), each against ``n_baseline`` size-matched controls
+    drawn uniformly at random from the un-knocked-out complement. Every
+    condition is evaluated with both connectivity and LM loss so selectivity can
+    be tested: a subnetwork is "special" only if knocking it out hurts more than
+    knocking out the same number of random neurons.
+    """
+    connectivity_kwargs = dict(connectivity_kwargs or {})
+    # These are supplied explicitly below; drop from the passthrough to avoid
+    # duplicate-keyword errors.
+    if 'model_name' in connectivity_kwargs:
+        model_name = connectivity_kwargs.pop('model_name')
+    connectivity_kwargs.pop('overwrite', None)
+
+    assert knockout_mode in ('mean', 'zero'), 'knockout_mode must be "mean" or "zero"'
+
     subnetwork_dir = os.path.join(output_dir, SUBNETWORK_NAME)
-    knockout_dir = os.path.join(output_dir, 'knockout')
+    knockout_root = os.path.join(output_dir, KNOCKOUT_NAME)
 
     if verbose:
-        stderr('Running knockout\n')
+        stderr('Running knockout (mode=%s)\n' % knockout_mode)
     indent += 2
 
-    if not os.path.exists(knockout_dir):
-        os.makedirs(knockout_dir)
+    if not os.path.exists(knockout_root):
+        os.makedirs(knockout_root)
+
+    # Cross-domain mean activations (computed once, cached) for "mean-out".
+    mean_activations = None
+    if knockout_mode == 'mean':
+        mean_allowed = {'domains', 'seq_len', 'n_tokens', 'split', 'take',
+                        'wrap', 'shuffle', 'batch_size', 'data_kwargs', 'model_kwargs'}
+        mean_kwargs = {k: v for k, v in connectivity_kwargs.items() if k in mean_allowed}
+        mean_activations, mean_coordinates = compute_mean_activations(
+            model_name=model_name,
+            output_dir=knockout_root,
+            overwrite=overwrite,
+            verbose=verbose,
+            indent=indent,
+            **mean_kwargs
+        )
 
     for path in os.listdir(subnetwork_dir):
         match = INPUT_NAME_RE.match(path)
         if not match:
             continue
-        knockout_filepath = os.path.join(subnetwork_dir, path)
-        data = load_h5_data(knockout_filepath, verbose=False)
+        subnetwork_filepath = os.path.join(subnetwork_dir, path)
+        data = load_h5_data(subnetwork_filepath, verbose=False)
         if 'parcellation' not in data:
             continue
+        probs = np.asarray(data['parcellation'])  # <n_units, n_networks>
+        coordinates = np.asarray(data['coordinates'])
+        if probs.ndim == 1:
+            probs = probs[:, None]
+        n_networks = probs.shape[1]
 
-        run_connectivity(
-            model_name=model_name,
-            output_dir=knockout_dir,
-            knockout_filepath=knockout_filepath,
-            knockout_thresh=0.5,
-            verbose=verbose,
-            indent=indent,
-            **connectivity_kwargs
-        )
+        if mean_activations is not None:
+            assert len(mean_activations) == coordinates.shape[0], \
+                'mean_activations (%d) and subnetwork coordinates (%d) are misaligned' % (
+                    len(mean_activations), coordinates.shape[0])
 
-        for step in steps:
-            if step == 'plot_stability':
-                plot_stability(
-                    output_dir=knockout_dir,
-                    verbose=verbose,
-                    indent=indent
+        # Healthy reference (no perturbation) for matched loss/connectivity.
+        if include_healthy:
+            _run_knockout_condition(
+                HEALTHY_NAME, knockout_root, model_name, coordinates, sel=None,
+                mean_activations=None, connectivity_kwargs=connectivity_kwargs,
+                eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                overwrite=overwrite, verbose=verbose, indent=indent
+            )
+
+        net_indices = list(range(n_networks)) if networks is None else list(networks)
+        for network_ix in net_indices:
+            _, sel = select_knockout(coordinates, probs, knockout_thresh, network_ix=network_ix)
+            if int(sel.sum()) == 0:
+                if verbose:
+                    stderr('%sNetwork %d has no units above threshold; skipping\n' % (
+                        ' ' * indent, network_ix))
+                continue
+            # Real subnetwork knockout.
+            _run_knockout_condition(
+                'network%d' % network_ix, knockout_root, model_name, coordinates, sel=sel,
+                mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
+                eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                overwrite=overwrite, verbose=verbose, indent=indent
+            )
+            # Size-matched random baselines from the complement.
+            _run_baselines(
+                'network%d' % network_ix, knockout_root, model_name, coordinates, sel,
+                mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
+                n_baseline=n_baseline, baseline_seed=baseline_seed,
+                eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                overwrite=overwrite, verbose=verbose, indent=indent
+            )
+
+        # Union of all subnetworks (original behavior) + its baselines.
+        if include_union and n_networks > 1:
+            _, sel = select_knockout(coordinates, probs, knockout_thresh, network_ix=None)
+            if int(sel.sum()) > 0:
+                _run_knockout_condition(
+                    'union', knockout_root, model_name, coordinates, sel=sel,
+                    mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
+                    eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                    overwrite=overwrite, verbose=verbose, indent=indent
                 )
-            else:
-                raise ValueError('Unrecognized step: %s' % step)
+                _run_baselines(
+                    'union', knockout_root, model_name, coordinates, sel,
+                    mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
+                    n_baseline=n_baseline, baseline_seed=baseline_seed,
+                    eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                    overwrite=overwrite, verbose=verbose, indent=indent
+                )
+
+    if eval_loss:
+        summarize_knockout_loss(knockout_root, verbose=verbose, indent=indent)
+        plot_knockout_loss(output_dir=output_dir, verbose=verbose, indent=indent)
+
+
+def summarize_knockout_loss(knockout_root, verbose=True, indent=0):
+    """Collect per-condition ``loss.h5`` files under ``knockout_root`` into a
+    tidy CSV comparing healthy vs subnetwork-knockout vs baseline-knockout."""
+    import pandas as pd
+
+    rows = []
+    for name in sorted(os.listdir(knockout_root)):
+        condition_dir = os.path.join(knockout_root, name)
+        loss_path = os.path.join(condition_dir, '%s%s' % (LOSS_NAME, EXTENSION))
+        if not os.path.isdir(condition_dir) or not os.path.exists(loss_path):
+            continue
+        data = load_h5_data(loss_path, verbose=False)
+        domains = sorted({k.rsplit('_', 1)[0] for k in data
+                          if k.endswith('_loss')})
+        if name == HEALTHY_NAME:
+            kind = 'healthy'
+        elif BASELINE_NAME in name:
+            kind = 'baseline'
+        else:
+            kind = 'knockout'
+        for domain in domains:
+            rows.append(dict(
+                condition=name,
+                kind=kind,
+                domain=domain,
+                loss=float(data['%s_loss' % domain]),
+                perplexity=float(data['%s_perplexity' % domain]),
+                n_tokens=int(data['%s_n_tokens' % domain]),
+            ))
+
+    if not rows:
+        return None
+    df = pd.DataFrame(rows).sort_values(['domain', 'condition']).reset_index(drop=True)
+    out_path = os.path.join(knockout_root, '%s_summary.csv' % LOSS_NAME)
+    df.to_csv(out_path, index=False)
+    if verbose:
+        stderr('%sWrote loss summary to %s\n' % (' ' * indent, out_path))
+
+    return df

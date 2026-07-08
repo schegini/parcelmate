@@ -118,6 +118,54 @@ def plot_parcellation(
                 plt.close('all')
 
 
+def plot_knockout_loss(
+        output_dir='results',
+        verbose=True,
+        indent=0
+):
+    """Plot the knockout LM-loss comparison (healthy vs subnetwork-knockout vs
+    size-matched random baseline) per domain, reading the summary written by
+    ``run_knockout``. Saved under ``plots/knockout/`` so the sweep dashboard
+    picks it up."""
+    knockout_root = os.path.join(output_dir, KNOCKOUT_NAME)
+    summary_path = os.path.join(knockout_root, '%s_summary.csv' % LOSS_NAME)
+    plot_dir = os.path.join(output_dir, PLOT_DIR, KNOCKOUT_NAME)
+
+    if not os.path.exists(summary_path):
+        if verbose:
+            stderr('%sNo knockout loss summary at %s; skipping plot\n' % (' ' * indent, summary_path))
+        return
+
+    if verbose:
+        stderr('%sPlotting knockout loss\n' % (' ' * indent))
+
+    df = pd.read_csv(summary_path)
+    if df.empty:
+        return
+    if not os.path.exists(plot_dir):
+        os.makedirs(plot_dir)
+
+    palette = {'healthy': '#4c72b0', 'knockout': '#c44e52', 'baseline': '#8c8c8c'}
+    for domain, sub in df.groupby('domain'):
+        sub = sub.sort_values(['kind', 'condition'])
+        colors = [palette.get(k, '#333333') for k in sub['kind']]
+        fig, ax = plt.subplots(figsize=(max(6, 0.5 * len(sub)), 4))
+        ax.bar(sub['condition'], sub['loss'], color=colors)
+        # Reference line at the healthy loss for quick visual comparison.
+        healthy = sub.loc[sub['kind'] == 'healthy', 'loss']
+        if len(healthy):
+            ax.axhline(float(healthy.iloc[0]), color=palette['healthy'],
+                       linestyle='--', linewidth=1, label='healthy')
+        ax.set_ylabel('LM loss (cross-entropy)')
+        ax.set_title('Knockout loss: %s' % domain)
+        ax.tick_params(axis='x', rotation=90)
+        handles = [plt.Rectangle((0, 0), 1, 1, color=palette[k]) for k in palette]
+        ax.legend(handles, list(palette.keys()), title='condition kind')
+        fig.tight_layout()
+        fig.savefig(os.path.join(plot_dir, '%s_%s.png' % (KNOCKOUT_NAME, domain)), dpi=150)
+        plt.close('all')
+
+
 def plot_stability(
         output_dir='results',
         verbose=True,

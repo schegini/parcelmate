@@ -1,0 +1,24 @@
+# Sweep spec for the Project 3 knockout controls.
+#
+#   python -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout.yaml -g -a nlp -P sphinx
+#
+# (add --no-submit to generate configs + .pbs without sbatch-ing them)
+#
+# Each grid point is a full pipeline run (connectivity -> parcellation ->
+# subnetwork_extraction -> subnetwork_knockout) writing to its own output_dir,
+# so the mean-out vs zero-out comparison never clobbers itself.
+
+base_config: parcelmate/configs/knockout_cluster.yaml
+name: knockout
+
+# Per-run output_dirs land here. Defaults next to the base output_dir if omitted.
+output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout
+
+# Dotted keys index into the base config; the sweep runs the cartesian product.
+grid:
+  # The central Project 3 comparison: does clamping to the cross-domain mean
+  # ("mean") behave differently from zeroing ("zero")?
+  knockout.knockout_mode: [mean, zero]
+  # Add more axes to multiply the grid, e.g.:
+  # parcellation.n_networks: [25, 50, 100]
+  # knockout.n_baseline: [3, 5]

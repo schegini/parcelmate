@@ -1,11 +1,12 @@
 import os
 import sys
+import csv
 import glob
 import html
 import argparse
 
 from parcelmate.cfg import get_cfg
-from parcelmate.constants import PLOT_DIR
+from parcelmate.constants import PLOT_DIR, KNOCKOUT_NAME, LOSS_NAME
 
 
 def _stderr(s):
@@ -27,6 +28,55 @@ def _params_str(params):
     return ', '.join('%s=%s' % (k.split('.')[-1], v) for k, v in params.items())
 
 
+# Column order and headers for the knockout loss table.
+_LOSS_COLUMNS = ['condition', 'kind', 'domain', 'loss', 'perplexity', 'n_tokens']
+# Row background per condition kind, matching the knockout plot palette.
+_KIND_BG = {'healthy': '#eaf0f8', 'knockout': '#f8ecec', 'baseline': '#f4f4f4'}
+
+
+def _load_loss_summary(output_dir):
+    """Return the rows of a run's knockout ``loss_summary.csv`` (or None)."""
+    path = os.path.join(output_dir, KNOCKOUT_NAME, '%s_summary.csv' % LOSS_NAME)
+    if not os.path.exists(path):
+        return None
+    with open(path, newline='') as f:
+        rows = list(csv.DictReader(f))
+    return rows or None
+
+
+def _fmt(column, value):
+    """Format a loss-table cell for display."""
+    if value is None or value == '':
+        return ''
+    if column in ('loss', 'perplexity'):
+        try:
+            return '%.3f' % float(value)
+        except (TypeError, ValueError):
+            return str(value)
+    return str(value)
+
+
+def _loss_summary_md(rows):
+    lines = ['\n**knockout loss summary**\n',
+             '| %s |' % ' | '.join(_LOSS_COLUMNS),
+             '|%s|' % '|'.join(['---'] * len(_LOSS_COLUMNS))]
+    for r in rows:
+        lines.append('| %s |' % ' | '.join(_fmt(c, r.get(c)) for c in _LOSS_COLUMNS))
+    return '\n'.join(lines)
+
+
+def _loss_summary_html(rows):
+    parts = ['<div class="cat"><h3>knockout loss summary</h3>',
+             '<table class="loss"><thead><tr>%s</tr></thead><tbody>'
+             % ''.join('<th>%s</th>' % html.escape(c) for c in _LOSS_COLUMNS)]
+    for r in rows:
+        bg = _KIND_BG.get(r.get('kind', ''), '#ffffff')
+        cells = ''.join('<td>%s</td>' % html.escape(_fmt(c, r.get(c))) for c in _LOSS_COLUMNS)
+        parts.append('<tr style="background:%s">%s</tr>' % (bg, cells))
+    parts.append('</tbody></table></div>')
+    return ''.join(parts)
+
+
 def collect(manifest_path, outdir):
     manifest = get_cfg(manifest_path)
     runs = manifest.get('runs', [])
@@ -37,7 +87,10 @@ def collect(manifest_path, outdir):
         '<style>body{font-family:sans-serif;margin:2rem;}'
         '.run{border-top:2px solid #ccc;padding-top:1rem;margin-top:1rem;}'
         '.cat{margin:1rem 0;}img{max-width:320px;height:auto;margin:4px;border:1px solid #ddd;'
-        'vertical-align:top;}h2{color:#333;}code{background:#f4f4f4;padding:2px 4px;}</style>',
+        'vertical-align:top;}h2{color:#333;}code{background:#f4f4f4;padding:2px 4px;}'
+        'table.loss{border-collapse:collapse;font-size:0.9em;}'
+        'table.loss th,table.loss td{border:1px solid #ddd;padding:3px 8px;text-align:right;}'
+        'table.loss th:nth-child(-n+3),table.loss td:nth-child(-n+3){text-align:left;}</style>',
         '<h1>Sweep: %s</h1>' % html.escape(str(manifest.get('name', ''))),
     ]
 
@@ -55,6 +108,11 @@ def collect(manifest_path, outdir):
         html_parts.append('<div class="run"><h2>%s</h2>' % html.escape(run['tag']))
         html_parts.append('<p><b>params:</b> <code>%s</code><br><b>output:</b> <code>%s</code> (%s)</p>'
                           % (html.escape(_params_str(params)), html.escape(output_dir), status))
+
+        loss_rows = _load_loss_summary(output_dir)
+        if loss_rows:
+            md_lines.append(_loss_summary_md(loss_rows))
+            html_parts.append(_loss_summary_html(loss_rows))
 
         for category in sorted(groups):
             md_lines.append('\n**%s**\n' % category)

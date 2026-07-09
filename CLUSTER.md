@@ -34,6 +34,20 @@ Open OnDemand is an open-sourced HPC web-portal.
 > **Backup your data**
 > Your home-directory is snapshotted daily. Most other group storage servers are NOT backed-up. You are responsible to make sure important and difficult-to-reproduce data are backed-up.
 
+> **Disk quota**
+> The 20GB home quota is easy to blow with the HuggingFace cache, the uv cache,
+> and the torch venv. `make_jobs.py` / `sweep.py` bake these redirects into every
+> generated `.pbs` so jobs never write them into home:
+> ```bash
+> export HF_HOME=/nlp/scr/<CSID>/.cache/huggingface
+> export UV_CACHE_DIR=/nlp/scr/<CSID>/.cache/uv
+> export UV_PROJECT_ENVIRONMENT=/nlp/scr/<CSID>/parcelmate/.venv
+> ```
+> Override the base with `--scratch /nlp/scr/<CSID>` (default is `schegini`'s), or
+> `--scratch ""` to disable. For interactive sessions, add the same three lines to
+> your `~/.bashrc`. Also keep every config's `output_dir` / `output_root` under
+> `/nlp/scr/...`, never a relative path (which lands in home).
+
 
 
 ### Data-transfer (SCDT)

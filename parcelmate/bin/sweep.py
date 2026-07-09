@@ -8,7 +8,7 @@ import argparse
 import yaml
 
 from parcelmate.cfg import get_cfg
-from parcelmate.bin.make_jobs import write_job
+from parcelmate.bin.make_jobs import write_job, DEFAULT_SCRATCH_DIR
 
 
 def _stderr(s):
@@ -99,6 +99,9 @@ if __name__ == '__main__':
     argparser.add_argument('-P', '--slurm_partition', default=None)
     argparser.add_argument('-e', '--exclude', nargs='+')
     argparser.add_argument('-C', '--constraint', default=None)
+    argparser.add_argument('--scratch', default=DEFAULT_SCRATCH_DIR,
+                           help='Group scratch base for HF/uv caches + venv, kept off the home quota. '
+                                'Pass "" to disable. Default: %s' % DEFAULT_SCRATCH_DIR)
     args = argparser.parse_args()
 
     spec = get_cfg(args.spec_path)
@@ -122,6 +125,7 @@ if __name__ == '__main__':
             slurm_partition=args.slurm_partition,
             slurm_constraint=args.constraint,
             exclude=args.exclude,
+            scratch_dir=args.scratch,
         ))
     _stderr('Generated %d job scripts in %s\n' % (len(pbs_paths), job_dir))
 

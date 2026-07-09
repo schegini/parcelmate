@@ -11,6 +11,9 @@ base = """#!/bin/bash
 """
 
 
+DEFAULT_SCRATCH_DIR = '/nlp/scr/schegini'
+
+
 def write_job(
         path,
         outdir='./',
@@ -22,6 +25,7 @@ def write_job(
         slurm_partition=None,
         slurm_constraint=None,
         exclude=None,
+        scratch_dir=DEFAULT_SCRATCH_DIR,
 ):
     """Generate a single SLURM batch script (`.pbs`) that runs the pipeline for one config.
 
@@ -47,6 +51,16 @@ def write_job(
         if exclude:
             f.write('#SBATCH --exclude=%s\n' % exclude)
         f.write('\n\nset -e\n\n')
+        if scratch_dir:
+            # Redirect the HuggingFace cache, uv cache, and project venv onto
+            # group scratch so the job never writes multi-GB artifacts into the
+            # 20GB /sailhome home quota, regardless of the compute node's shell
+            # config. See CLUSTER.md ("disk quota").
+            f.write('# Keep caches + venv off the /sailhome home quota (see CLUSTER.md).\n')
+            f.write('export HF_HOME=%s/.cache/huggingface\n' % scratch_dir)
+            f.write('export UV_CACHE_DIR=%s/.cache/uv\n' % scratch_dir)
+            f.write('export UV_PROJECT_ENVIRONMENT=%s/parcelmate/.venv\n' % scratch_dir)
+            f.write('mkdir -p %s/.cache\n\n' % scratch_dir)
         # Ensure uv is available (installs to ~/.local/bin if missing)
         f.write('if ! command -v uv &> /dev/null; then\n')
         f.write('    if [ -x "$HOME/.local/bin/uv" ]; then\n')
@@ -77,6 +91,9 @@ if __name__ == '__main__':
     argparser.add_argument('-e', '--exclude', nargs='+', help='Nodes to exclude')
     argparser.add_argument('-C', '--constraint', default=None, help='Value for SLURM --constraint setting (e.g. GPU_CC>=7.5, GPU_TYP:A100)')
     argparser.add_argument('-o', '--outdir', default='./', help='Directory in which to place generated batch scripts')
+    argparser.add_argument('--scratch', default=DEFAULT_SCRATCH_DIR,
+                           help='Group scratch base for HF/uv caches + venv, kept off the home quota. '
+                                'Pass "" to disable the redirect. Default: %s' % DEFAULT_SCRATCH_DIR)
     args = argparser.parse_args()
 
     for path in args.paths:
@@ -91,4 +108,5 @@ if __name__ == '__main__':
             slurm_partition=args.slurm_partition,
             slurm_constraint=args.constraint,
             exclude=args.exclude,
+            scratch_dir=args.scratch,
         )

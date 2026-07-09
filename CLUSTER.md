@@ -37,11 +37,12 @@ Open OnDemand is an open-sourced HPC web-portal.
 > **Disk quota**
 > The 20GB home quota is easy to blow with the HuggingFace cache, the uv cache,
 > and the torch venv. `make_jobs.py` / `sweep.py` bake these redirects into every
-> generated `.pbs` so jobs never write them into home:
+> generated `.pbs` so jobs never write them into home (each job gets its own venv,
+> keyed on the job name, so concurrent sweep jobs never race on `uv sync`):
 > ```bash
 > export HF_HOME=/nlp/scr/<CSID>/.cache/huggingface
 > export UV_CACHE_DIR=/nlp/scr/<CSID>/.cache/uv
-> export UV_PROJECT_ENVIRONMENT=/nlp/scr/<CSID>/parcelmate/.venv
+> export UV_PROJECT_ENVIRONMENT=/nlp/scr/<CSID>/parcelmate/venvs/<job_name>
 > ```
 > Override the base with `--scratch /nlp/scr/<CSID>` (default is `schegini`'s), or
 > `--scratch ""` to disable. For interactive sessions, add the same three lines to

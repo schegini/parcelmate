@@ -59,8 +59,11 @@ def write_job(
             f.write('# Keep caches + venv off the /sailhome home quota (see CLUSTER.md).\n')
             f.write('export HF_HOME=%s/.cache/huggingface\n' % scratch_dir)
             f.write('export UV_CACHE_DIR=%s/.cache/uv\n' % scratch_dir)
-            f.write('export UV_PROJECT_ENVIRONMENT=%s/parcelmate/.venv\n' % scratch_dir)
-            f.write('mkdir -p %s/.cache\n\n' % scratch_dir)
+            # Per-job venv (keyed on the unique job name) so concurrent sweep jobs
+            # never race on a shared `uv sync`. It lives on the same filesystem as
+            # UV_CACHE_DIR, so uv hardlinks packages in and the disk cost is tiny.
+            f.write('export UV_PROJECT_ENVIRONMENT=%s/parcelmate/venvs/%s\n' % (scratch_dir, job_name))
+            f.write('mkdir -p %s/.cache %s/parcelmate/venvs\n\n' % (scratch_dir, scratch_dir))
         # Ensure uv is available (installs to ~/.local/bin if missing)
         f.write('if ! command -v uv &> /dev/null; then\n')
         f.write('    if [ -x "$HOME/.local/bin/uv" ]; then\n')

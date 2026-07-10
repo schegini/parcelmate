@@ -1,0 +1,1442 @@
+Using CPython 3.12.3 interpreter at: /usr/bin/python3
+Creating virtual environment at: /nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero
+Resolved 101 packages in 1ms
+Installed 87 packages in 18.40s
+ + aiohappyeyeballs==2.6.2
+ + aiohttp==3.14.1
+ + aiosignal==1.4.0
+ + annotated-doc==0.0.4
+ + anyio==4.14.0
+ + attrs==26.1.0
+ + certifi==2026.6.17
+ + charset-normalizer==3.4.7
+ + click==8.4.1
+ + contourpy==1.3.3
+ + cuda-bindings==13.3.1
+ + cuda-pathfinder==1.5.5
+ + cuda-toolkit==13.0.2
+ + cycler==0.12.1
+ + datasets==5.0.0
+ + dill==0.4.1
+ + filelock==3.29.4
+ + fonttools==4.63.0
+ + frozenlist==1.8.0
+ + fsspec==2026.4.0
+ + h11==0.16.0
+ + h5py==3.16.0
+ + hf-xet==1.5.1
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + huggingface-hub==1.20.1
+ + idna==3.18
+ + jinja2==3.1.6
+ + joblib==1.5.3
+ + kiwisolver==1.5.0
+ + markdown-it-py==4.2.0
+ + markupsafe==3.0.3
+ + matplotlib==3.11.0
+ + mdurl==0.1.2
+ + mpmath==1.3.0
+ + multidict==6.7.1
+ + multiprocess==0.70.19
+ + narwhals==2.22.1
+ + networkx==3.6.1
+ + numpy==2.5.0
+ + nvidia-cublas==13.1.1.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.20.0.48
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.29.7
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + packaging==26.2
+ + pandas==3.0.3
+ + parcelmate==0.1.0 (from file:///sailhome/schegini/parcelmate)
+ + pillow==12.2.0
+ + propcache==0.5.2
+ + pyarrow==24.0.0
+ + pygments==2.20.0
+ + pyparsing==3.3.2
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + regex==2026.5.9
+ + requests==2.34.2
+ + rich==15.0.0
+ + safetensors==0.8.0
+ + scikit-learn==1.9.0
+ + scipy==1.18.0
+ + seaborn==0.13.2
+ + setuptools==81.0.0
+ + shellingham==1.5.4
+ + six==1.17.0
+ + sympy==1.14.0
+ + threadpoolctl==3.6.0
+ + tokenizers==0.22.2
+ + torch==2.12.1
+ + tqdm==4.68.3
+ + transformers==5.12.1
+ + triton==3.7.1
+ + typer==0.25.1
+ + typing-extensions==4.15.0
+ + urllib3==2.7.0
+ + xxhash==3.7.0
+ + yarl==1.24.2
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 2236.68it/s]
+Running connectivity for wikitext
+  Getting input data
+  Querying model
+    Sample 1/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample1.h5
+      Elapsed time: 17.27 s
+    Sample 2/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample2.h5
+      Elapsed time: 12.94 s
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_avg.h5
+Running connectivity for tldr17
+  Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1274 > 1024). Running this sequence through the model will result in indexing errors
+  Querying model
+    Sample 1/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample1.h5
+      Elapsed time: 10.91 s
+    Sample 2/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample2.h5
+      Elapsed time: 11.33 s
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_avg.h5
+Running connectivity for codeparrot
+  Getting input data
+  Querying model
+    Sample 1/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample1.h5
+      Elapsed time: 12.64 s
+    Sample 2/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample2.h5
+      Elapsed time: 12.14 s
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_avg.h5
+Running connectivity for random
+  Getting input data
+  Querying model
+    Sample 1/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample1.h5
+      Elapsed time: 12.05 s
+    Sample 2/2
+      Getting timecourses
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample2.h5
+      Elapsed time: 12.14 s
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_avg.h5
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_avg.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (13.72s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_avg.h5
+  Elapsed time: 21.24 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample2.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (12.20s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample2.h5
+  Elapsed time: 19.63 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample1.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (11.37s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample1.h5
+  Elapsed time: 21.07 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_avg.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (11.97s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_avg.h5
+  Elapsed time: 21.36 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample1.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (11.88s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample1.h5
+  Elapsed time: 17.84 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_avg.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (11.40s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_avg.h5
+  Elapsed time: 19.86 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample2.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (12.76s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample2.h5
+  Elapsed time: 21.04 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample1.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (11.23s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10/sailhome/schegini/parcelmate/parcelmate/data.py:148: RuntimeWarning: invalid value encountered in divide
+  out = (arr - arr.mean(axis=axis, keepdims=True)) / arr.std(axis=axis, keepdims=True)
+
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample1.h5
+  Elapsed time: 20.28 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample2.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (13.43s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample2.h5
+  Elapsed time: 21.44 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_avg.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (15.09s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_avg.h5
+  Elapsed time: 21.73 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample1.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (11.04s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10/sailhome/schegini/parcelmate/parcelmate/data.py:148: RuntimeWarning: invalid value encountered in divide
+  out = (arr - arr.mean(axis=axis, keepdims=True)) / arr.std(axis=axis, keepdims=True)
+     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample1.h5
+  Elapsed time: 16.85 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample2.h5
+  Sampling (n_networks=50)
+    PCA transforming (n components = 200) (11.98s)
+    Drawing samples
+      Sample 1/10      Sample 2/10      Sample 3/10      Sample 4/10      Sample 5/10      Sample 6/10      Sample 7/10      Sample 8/10      Sample 9/10      Sample 10/10
+  Aligning samples
+     Alignment 1/10     Alignment 2/10     Alignment 3/10     Alignment 4/10     Alignment 5/10     Alignment 6/10     Alignment 7/10     Alignment 8/10     Alignment 9/10     Alignment 10/10
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample2.h5
+  Elapsed time: 17.90 s
+Extracting subnetworks
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_avg.h5
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/subnetwork/parcellation_shared_avg.h5
+Plotting connectivity
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_avg.h5
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_avg.h5
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_avg.h5
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_avg.h5
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout__knockout_mode-zero/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+Plotting parcellations
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/subnetwork/parcellation_shared_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_avg.h5
+Plotting stability
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample2.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample1.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_sample1.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_wikitext_sample2.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample1.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_tldr17_sample2.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_codeparrot_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample1.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/connectivity/connectivity_random_sample2.h5
+Running knockout (mode=zero)
+  Condition healthy (0 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 13166.42it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 10.85 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 10.86 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.8954  Perplexity=49.18  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1348 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 10.65 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 11.03 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.7082  Perplexity=40.78  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 11.99 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 10.89 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.0128  Perplexity=7.48  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 12.02 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 12.51 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.8337  Perplexity=137816.45  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/healthy/loss.h5
+  Condition network0 (26 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 14632.90it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+/sailhome/schegini/parcelmate/parcelmate/data.py:198: RuntimeWarning: invalid value encountered in divide
+  X /= np.linalg.norm(X, axis=0, keepdims=True)
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 2.29 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 2.21 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=5.3333  Perplexity=207.11  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1559 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 2.25 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 2.16 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=4.8254  Perplexity=124.63  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 2.36 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 2.30 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.0637  Perplexity=21.41  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 2.27 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 3.55 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=12.0278  Perplexity=167350.34  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0/loss.h5
+  Condition network0_baseline0 (26 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 18627.93it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 2.30 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 2.29 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.9508  Perplexity=51.97  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1419 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 2.27 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 2.22 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.6933  Perplexity=40.18  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 2.30 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 2.23 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.1084  Perplexity=8.24  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 2.21 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 2.23 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.8221  Perplexity=136225.86  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline0/loss.h5
+  Condition network0_baseline1 (26 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 20585.54it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 2.27 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 2.23 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.9146  Perplexity=50.13  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1348 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 2.25 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 2.23 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.7398  Perplexity=42.09  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 2.27 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 2.23 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.2310  Perplexity=9.31  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 2.22 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 2.23 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.8201  Perplexity=135951.28  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline1/loss.h5
+  Condition network0_baseline2 (26 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 37674.15it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 2.34 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 2.23 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.8894  Perplexity=48.88  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1312 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 2.23 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 2.22 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.6959  Perplexity=40.28  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 2.22 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 2.19 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.7231  Perplexity=15.23  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 2.17 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 2.20 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.8433  Perplexity=139145.60  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network0_baseline2/loss.h5
+  Network 1 has no units above threshold; skipping
+  Condition network2 (46 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 18158.22it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 2.26 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 2.20 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=6.1491  Perplexity=468.31  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1551 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 2.23 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 2.18 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=5.7037  Perplexity=299.97  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 2.30 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 2.22 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.7518  Perplexity=15.67  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 2.24 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 2.25 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=13.3299  Perplexity=615334.67  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2/loss.h5
+  Condition network2_baseline0 (46 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 16447.38it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 2.33 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 2.26 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.9312  Perplexity=50.97  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1790 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 2.23 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 2.27 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.7342  Perplexity=41.86  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 2.26 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 2.21 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.2605  Perplexity=9.59  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 2.17 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 2.21 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.9400  Perplexity=153275.85  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline0/loss.h5
+  Condition network2_baseline1 (46 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 6856.84it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 1.75 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 1.69 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.9248  Perplexity=50.64  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1433 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 1.64 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 1.63 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.7906  Perplexity=44.28  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 1.67 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 1.67 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.2953  Perplexity=9.93  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 1.62 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 1.65 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.8780  Perplexity=144064.53  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline1/loss.h5
+  Condition network2_baseline2 (46 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 12650.18it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 1.70 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 1.63 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.9836  Perplexity=53.71  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1271 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 1.63 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 1.67 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=3.7418  Perplexity=42.17  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 1.72 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 1.65 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=2.2660  Perplexity=9.64  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 1.61 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 1.66 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=12.1897  Perplexity=196743.55  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/network2_baseline2/loss.h5
+  Condition union (1254 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 35921.36it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 1.74 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 1.68 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=15.5894  Perplexity=5893960.60  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1295 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 1.66 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 1.62 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=13.5491  Perplexity=766142.02  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 1.63 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 1.63 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.0386  Perplexity=62227.99  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 1.66 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 1.67 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=19.2220  Perplexity=222842331.80  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union/loss.h5
+  Condition union_baseline0 (1254 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 7016.11it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 1.72 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 1.62 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=12.4536  Perplexity=256173.09  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1069 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 1.66 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 1.65 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=11.7526  Perplexity=127083.80  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 1.67 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 1.66 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=9.9803  Perplexity=21597.29  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 1.62 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 1.63 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=19.9730  Perplexity=472226359.73  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline0/loss.h5
+  Condition union_baseline1 (1254 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 41728.76it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 1.73 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 1.66 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=8.9614  Perplexity=7796.52  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1083 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 1.63 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 1.69 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=8.4070  Perplexity=4478.48  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 1.66 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 1.64 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=7.7212  Perplexity=2255.56  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 1.61 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 1.64 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=13.8165  Perplexity=1001010.79  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline1/loss.h5
+  Condition union_baseline2 (1254 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 7009.69it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 1.72 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 1.63 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=6.7151  Perplexity=824.76  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1064 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 1.92 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 1.79 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=5.9975  Perplexity=402.41  (tldr17)
+    Running connectivity for codeparrot
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_codeparrot_sample1.h5
+          Elapsed time: 1.65 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_codeparrot_sample2.h5
+          Elapsed time: 1.67 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_codeparrot_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=5.1954  Perplexity=180.45  (codeparrot)
+    Running connectivity for random
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_random_sample1.h5
+          Elapsed time: 1.65 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/13            Batch 2/13            Batch 3/13            Batch 4/13            Batch 5/13            Batch 6/13            Batch 7/13            Batch 8/13            Batch 9/13            Batch 10/13            Batch 11/13            Batch 12/13            Batch 13/13
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_random_sample2.h5
+          Elapsed time: 1.66 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/connectivity/connectivity_random_avg.h5
+      Computing LM loss
+        Batch 1/13        Batch 2/13        Batch 3/13        Batch 4/13        Batch 5/13        Batch 6/13        Batch 7/13        Batch 8/13        Batch 9/13        Batch 10/13        Batch 11/13        Batch 12/13        Batch 13/13
+      Loss=12.9279  Perplexity=411651.03  (random)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/union_baseline2/loss.h5
+  Wrote loss summary to /nlp/scr/schegini/parcelmate/sweeps/knockout/knockout_mode-zero/knockout/loss_summary.csv
+  Plotting knockout loss

@@ -1,0 +1,27 @@
+output_dir: /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-zero
+connectivity:
+  model_name: gpt2
+  domains:
+  - wikitext
+  - tldr17
+  seq_len: 128
+  n_samples: 2
+  n_tokens: 5000
+  batch_size: 8
+parcellation:
+  n_networks: 10
+  n_samples: 3
+  connectivity_pca_components: 50
+subnetwork_extraction: {}
+knockout:
+  knockout_mode: zero
+  n_baseline: 1
+  baseline_seed: 0
+  networks:
+  - 0
+  - 1
+  include_union: true
+  include_healthy: true
+  eval_loss: true
+  loss_n_tokens: 5000
+  steps: []

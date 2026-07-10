@@ -1,0 +1,8 @@
+# Iteration 3 sweep: model scale.
+#   python -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout_scale.yaml -g -a nlp -P sphinx -t 16 -m 48
+# 2 jobs: gpt2-medium (355M), gpt2-large (774M). gpt2 itself is covered by iter1.
+base_config: parcelmate/configs/knockout_scale.yaml
+name: knockout_scale
+output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout_scale
+grid:
+  connectivity.model_name: [gpt2-medium, gpt2-large]

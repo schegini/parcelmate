@@ -1,0 +1,43 @@
+Resolved 101 packages in 67ms
+Checked 87 packages in 237ms
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py:747: UserWarning: Not enough free disk space to download the file. The expected file size is: 548.11 MB. The target location /sailhome/schegini/.cache/huggingface/hub/models--gpt2/blobs only has 383.78 MB free disk space.
+  warnings.warn(
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/sailhome/schegini/parcelmate/parcelmate/bin/main.py", line 26, in <module>
+    run_connectivity(
+  File "/sailhome/schegini/parcelmate/parcelmate/model.py", line 702, in run_connectivity
+    model, tokenizer = get_model_and_tokenizer(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/parcelmate/model.py", line 160, in get_model_and_tokenizer
+    model = AutoModel.from_pretrained(model_name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py", line 406, in from_pretrained
+    return model_class.from_pretrained(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4229, in from_pretrained
+    checkpoint_files, sharded_metadata = _get_resolved_checkpoint_files(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 678, in _get_resolved_checkpoint_files
+    resolved_archive_file = cached_file(pretrained_model_name_or_path, filename, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/utils/hub.py", line 293, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/utils/hub.py", line 527, in cached_files
+    raise e
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/utils/hub.py", line 437, in cached_files
+    hf_hub_download(
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1016, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1238, in _hf_hub_download_to_cache_dir
+    _download_to_tmp_and_move(
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1851, in _download_to_tmp_and_move
+    with tmp_path.open("wb") as f:
+OSError: [Errno 122] Disk quota exceeded

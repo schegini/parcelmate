@@ -1,0 +1,31 @@
+# Iteration 2 base config: Project-3 selectivity, gpt2, tuning the knockout
+# threshold. Tests the first 5 subnetworks (not just 3) for a population view of
+# selectivity. The sweep grids knockout_mode x knockout_thresh on top of this.
+output_dir: /nlp/scr/schegini/parcelmate/knockout_iter2
+
+connectivity:
+  model_name: gpt2
+  domains: [wikitext, tldr17, codeparrot, random]
+  seq_len: 512
+  n_samples: 2
+  n_tokens: 50000
+  batch_size: 8
+
+parcellation:
+  n_networks: 50
+  n_samples: 10
+  connectivity_pca_components: 200
+
+subnetwork_extraction: {}
+
+knockout:
+  knockout_mode: mean       # overridden by grid
+  knockout_thresh: 0.5      # overridden by grid
+  n_baseline: 3
+  baseline_seed: 0
+  networks: [0, 1, 2, 3, 4]
+  include_union: true
+  include_healthy: true
+  eval_loss: true
+  loss_n_tokens: 50000
+  steps: []

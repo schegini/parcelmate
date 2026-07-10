@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+#SBATCH --job-name=knockout_iter2__knockout_mode-zero__knockout_thresh-0.5
+#SBATCH --output="knockout_iter2__knockout_mode-zero__knockout_thresh-0.5-%N-%j.out"
+#SBATCH --time=10:00:00
+#SBATCH --mem=24G
+#SBATCH --ntasks=1
+#SBATCH --gres=gpu:1
+#SBATCH --account=nlp
+#SBATCH --partition=sphinx
+
+
+set -e
+
+# Keep caches + venv off the /sailhome home quota (see CLUSTER.md).
+export HF_HOME=/nlp/scr/schegini/.cache/huggingface
+export UV_CACHE_DIR=/nlp/scr/schegini/.cache/uv
+export UV_PROJECT_ENVIRONMENT=/nlp/scr/schegini/parcelmate/venvs/knockout_iter2__knockout_mode-zero__knockout_thresh-0.5
+mkdir -p /nlp/scr/schegini/.cache /nlp/scr/schegini/parcelmate/venvs
+
+if ! command -v uv &> /dev/null; then
+    if [ -x "$HOME/.local/bin/uv" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    else
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+fi
+
+uv sync
+uv run python -m parcelmate.bin.main /sailhome/schegini/parcelmate/sweep_knockout_iter2/configs/knockout_iter2__knockout_mode-zero__knockout_thresh-0.5.yaml

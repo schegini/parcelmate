@@ -1,0 +1,612 @@
+Using CPython 3.12.3 interpreter at: /usr/bin/python3
+Creating virtual environment at: /nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean
+Resolved 101 packages in 52ms
+Downloading networkx (2.0MiB)
+Downloading setuptools (1.0MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading hf-xet (4.3MiB)
+Downloading fonttools (4.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading tokenizers (3.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading nvidia-nvjitlink (38.8MiB)
+Downloading pygments (1.2MiB)
+Downloading matplotlib (9.6MiB)
+Downloading sympy (6.0MiB)
+Downloading aiohttp (1.7MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.3MiB)
+Downloading pillow (6.8MiB)
+Downloading pyarrow (46.6MiB)
+Downloading scikit-learn (8.7MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading scipy (33.7MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-nccl-cu13 (196.4MiB)
+Downloading torch (507.6MiB)
+Downloading numpy (15.9MiB)
+Downloading kiwisolver (1.4MiB)
+Downloading transformers (10.6MiB)
+Downloading pandas (10.4MiB)
+Downloading h5py (5.2MiB)
+Downloading triton (188.6MiB)
+Downloading nvidia-cudnn-cu13 (349.2MiB)
+ Downloaded nvidia-cufile
+ Downloaded kiwisolver
+ Downloaded aiohttp
+ Downloaded nvidia-cuda-runtime
+ Downloaded pygments
+ Downloaded tokenizers
+ Downloaded setuptools
+ Downloaded networkx
+ Downloaded hf-xet
+ Downloaded fonttools
+ Downloaded h5py
+ Downloaded cuda-bindings
+ Downloaded pillow
+ Downloaded sympy
+ Downloaded scikit-learn
+ Downloaded matplotlib
+ Downloaded nvidia-cuda-cupti
+ Downloaded numpy
+ Downloaded pandas
+ Downloaded transformers
+ Downloaded scipy
+ Downloaded nvidia-nvjitlink
+ Downloaded pyarrow
+ Downloaded nvidia-curand
+ Downloaded nvidia-nvshmem-cu13
+ Downloaded nvidia-cuda-nvrtc
+ Downloaded nvidia-cusparse
+ Downloaded nvidia-cusparselt-cu13
+ Downloaded nvidia-cusolver
+ Downloaded nvidia-nccl-cu13
+ Downloaded triton
+ Downloaded nvidia-cufft
+ Downloaded nvidia-cudnn-cu13
+ Downloaded nvidia-cublas
+ Downloaded torch
+Prepared 87 packages in 1m 47s
+Installed 87 packages in 11.22s
+ + aiohappyeyeballs==2.6.2
+ + aiohttp==3.14.1
+ + aiosignal==1.4.0
+ + annotated-doc==0.0.4
+ + anyio==4.14.0
+ + attrs==26.1.0
+ + certifi==2026.6.17
+ + charset-normalizer==3.4.7
+ + click==8.4.1
+ + contourpy==1.3.3
+ + cuda-bindings==13.3.1
+ + cuda-pathfinder==1.5.5
+ + cuda-toolkit==13.0.2
+ + cycler==0.12.1
+ + datasets==5.0.0
+ + dill==0.4.1
+ + filelock==3.29.4
+ + fonttools==4.63.0
+ + frozenlist==1.8.0
+ + fsspec==2026.4.0
+ + h11==0.16.0
+ + h5py==3.16.0
+ + hf-xet==1.5.1
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + huggingface-hub==1.20.1
+ + idna==3.18
+ + jinja2==3.1.6
+ + joblib==1.5.3
+ + kiwisolver==1.5.0
+ + markdown-it-py==4.2.0
+ + markupsafe==3.0.3
+ + matplotlib==3.11.0
+ + mdurl==0.1.2
+ + mpmath==1.3.0
+ + multidict==6.7.1
+ + multiprocess==0.70.19
+ + narwhals==2.22.1
+ + networkx==3.6.1
+ + numpy==2.5.0
+ + nvidia-cublas==13.1.1.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.20.0.48
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.29.7
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + packaging==26.2
+ + pandas==3.0.3
+ + parcelmate==0.1.0 (from file:///sailhome/schegini/parcelmate)
+ + pillow==12.2.0
+ + propcache==0.5.2
+ + pyarrow==24.0.0
+ + pygments==2.20.0
+ + pyparsing==3.3.2
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + regex==2026.5.9
+ + requests==2.34.2
+ + rich==15.0.0
+ + safetensors==0.8.0
+ + scikit-learn==1.9.0
+ + scipy==1.18.0
+ + seaborn==0.13.2
+ + setuptools==81.0.0
+ + shellingham==1.5.4
+ + six==1.17.0
+ + sympy==1.14.0
+ + threadpoolctl==3.6.0
+ + tokenizers==0.22.2
+ + torch==2.12.1
+ + tqdm==4.68.3
+ + transformers==5.12.1
+ + triton==3.7.1
+ + typer==0.25.1
+ + typing-extensions==4.15.0
+ + urllib3==2.7.0
+ + xxhash==3.7.0
+ + yarl==1.24.2
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 2310.82it/s]
+Running connectivity for wikitext
+  Getting input data
+  Querying model
+    Sample 1/2
+      Getting timecourses
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample1.h5
+      Elapsed time: 9.73 s
+    Sample 2/2
+      Getting timecourses
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample2.h5
+      Elapsed time: 5.48 s
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_avg.h5
+Running connectivity for tldr17
+  Getting input data
+  Querying model
+    Sample 1/2
+      Getting timecourses
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample1.h5
+      Elapsed time: 5.26 s
+    Sample 2/2
+      Getting timecourses
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample2.h5
+      Elapsed time: 5.31 s
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_avg.h5
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample2.h5
+  Sampling (n_networks=10)
+    PCA transforming (n components = 50) (7.58s)
+    Drawing samples
+      Sample 1/3      Sample 2/3      Sample 3/3
+  Aligning samples
+     Alignment 1/3     Alignment 2/3     Alignment 3/3
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample2.h5
+  Elapsed time: 13.05 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_avg.h5
+  Sampling (n_networks=10)
+    PCA transforming (n components = 50) (6.28s)
+    Drawing samples
+      Sample 1/3      Sample 2/3      Sample 3/3
+  Aligning samples
+     Alignment 1/3     Alignment 2/3     Alignment 3/3
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_avg.h5
+  Elapsed time: 12.11 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample1.h5
+  Sampling (n_networks=10)
+    PCA transforming (n components = 50) (6.75s)
+    Drawing samples
+      Sample 1/3      Sample 2/3      Sample 3/3
+  Aligning samples
+     Alignment 1/3     Alignment 2/3     Alignment 3/3
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample1.h5
+  Elapsed time: 11.83 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample2.h5
+  Sampling (n_networks=10)
+    PCA transforming (n components = 50) (6.89s)
+    Drawing samples
+      Sample 1/3      Sample 2/3      Sample 3/3
+  Aligning samples
+     Alignment 1/3     Alignment 2/3     Alignment 3/3
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample2.h5
+  Elapsed time: 12.39 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample1.h5
+  Sampling (n_networks=10)
+    PCA transforming (n components = 50) (6.27s)
+    Drawing samples
+      Sample 1/3      Sample 2/3      Sample 3/3
+  Aligning samples
+     Alignment 1/3     Alignment 2/3     Alignment 3/3
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample1.h5
+  Elapsed time: 11.19 s
+Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_avg.h5
+  Sampling (n_networks=10)
+    PCA transforming (n components = 50) (5.53s)
+    Drawing samples
+      Sample 1/3      Sample 2/3      Sample 3/3
+  Aligning samples
+     Alignment 1/3     Alignment 2/3     Alignment 3/3
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_avg.h5
+  Elapsed time: 10.62 s
+Extracting subnetworks
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_avg.h5
+  Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/subnetwork/parcellation_shared_avg.h5
+Plotting connectivity
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_avg.h5
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_avg.h5
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+/nlp/scr/schegini/parcelmate/venvs/knockout_smoke__knockout_mode-mean/lib/python3.12/site-packages/seaborn/matrix.py:560: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
+  warnings.warn(msg)
+Plotting parcellations
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/subnetwork/parcellation_shared_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_avg.h5
+Plotting stability
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample2.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_avg.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_sample1.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample2.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_tldr17_sample1.h5
+  Loading from /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/connectivity/connectivity_wikitext_avg.h5
+Running knockout (mode=mean)
+  Computing cross-domain mean activations
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 13366.28it/s]
+    Domain wikitext
+      Getting input data
+      Getting timecourses
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+    Domain tldr17
+      Getting input data
+      Getting timecourses
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/mean_activations.h5
+  Condition healthy (0 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 8538.02it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/healthy/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 3.87 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/healthy/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 4.50 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/healthy/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=4.3318  Perplexity=76.08  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1320 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/healthy/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 3.59 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/healthy/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 3.63 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/healthy/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=3.9180  Perplexity=50.30  (tldr17)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/healthy/loss.h5
+  Condition network0 (4552 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 18928.40it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 0.51 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 0.32 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=9.6630  Perplexity=15724.34  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 0.33 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 0.34 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=8.4191  Perplexity=4532.86  (tldr17)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0/loss.h5
+  Condition network0_baseline0 (4552 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 10465.96it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0_baseline0/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 0.40 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0_baseline0/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 0.35 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0_baseline0/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=8.3444  Perplexity=4206.52  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (2035 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0_baseline0/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 0.42 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0_baseline0/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 0.44 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0_baseline0/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=7.5555  Perplexity=1911.17  (tldr17)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network0_baseline0/loss.h5
+  Condition network1 (169 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 35996.35it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 0.43 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 0.37 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=4.2928  Perplexity=73.17  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 0.43 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 0.42 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=3.7239  Perplexity=41.43  (tldr17)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1/loss.h5
+  Condition network1_baseline0 (169 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 7669.16it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1_baseline0/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 0.39 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1_baseline0/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 0.37 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1_baseline0/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=4.3246  Perplexity=75.53  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1_baseline0/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 0.41 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1_baseline0/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 0.43 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1_baseline0/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=4.0872  Perplexity=59.57  (tldr17)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/network1_baseline0/loss.h5
+  Condition union (6193 units knocked out)
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 12609.58it/s]
+    Running connectivity for wikitext
+      Getting input data
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/union/connectivity/connectivity_wikitext_sample1.h5
+          Elapsed time: 0.41 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/union/connectivity/connectivity_wikitext_sample2.h5
+          Elapsed time: 0.38 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/union/connectivity/connectivity_wikitext_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=9.2968  Perplexity=10902.65  (wikitext)
+    Running connectivity for tldr17
+      Getting input data
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1851 > 1024). Running this sequence through the model will result in indexing errors
+      Querying model
+        Sample 1/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/union/connectivity/connectivity_tldr17_sample1.h5
+          Elapsed time: 0.35 s
+        Sample 2/2
+          Getting timecourses
+            Batch 1/5            Batch 2/5            Batch 3/5            Batch 4/5            Batch 5/5
+          Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/union/connectivity/connectivity_tldr17_sample2.h5
+          Elapsed time: 0.33 s
+      Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/union/connectivity/connectivity_tldr17_avg.h5
+      Computing LM loss
+        Batch 1/5        Batch 2/5        Batch 3/5        Batch 4/5        Batch 5/5
+      Loss=7.7912  Perplexity=2419.28  (tldr17)
+    Saving to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/union/loss.h5
+  Skipping baselines for union: 6193 units knocked out exceeds complement of 3791
+  Wrote loss summary to /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean/knockout/loss_summary.csv
+  Plotting knockout loss
+Got disconnected from remote data host. Retrying in 5sec [1/20]
+Fatal Python error: PyGILState_Release: auto-releasing thread-state, but no thread-state for this thread
+Python runtime state: finalizing (tstate=0x0000000000ba5748)
+

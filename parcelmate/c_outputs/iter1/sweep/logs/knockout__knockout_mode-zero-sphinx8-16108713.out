@@ -1,0 +1,151 @@
+Resolved 101 packages in 81ms
+Downloading triton (188.6MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-cudnn-cu13 (349.2MiB)
+Downloading pyarrow (46.6MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading nvidia-nccl-cu13 (196.4MiB)
+Downloading torch (507.6MiB)
+ Downloaded pyarrow
+ Downloaded nvidia-cusparse
+ Downloaded nvidia-cusparselt-cu13
+ Downloaded nvidia-cusolver
+ Downloaded nvidia-nccl-cu13
+ Downloaded nvidia-cufft
+ Downloaded triton
+ Downloaded nvidia-cudnn-cu13
+ Downloaded nvidia-cublas
+ Downloaded torch
+Prepared 10 packages in 47.50s
+Installed 87 packages in 15.28s
+ + aiohappyeyeballs==2.6.2
+ + aiohttp==3.14.1
+ + aiosignal==1.4.0
+ + annotated-doc==0.0.4
+ + anyio==4.14.0
+ + attrs==26.1.0
+ + certifi==2026.6.17
+ + charset-normalizer==3.4.7
+ + click==8.4.1
+ + contourpy==1.3.3
+ + cuda-bindings==13.3.1
+ + cuda-pathfinder==1.5.5
+ + cuda-toolkit==13.0.2
+ + cycler==0.12.1
+ + datasets==5.0.0
+ + dill==0.4.1
+ + filelock==3.29.4
+ + fonttools==4.63.0
+ + frozenlist==1.8.0
+ + fsspec==2026.4.0
+ + h11==0.16.0
+ + h5py==3.16.0
+ + hf-xet==1.5.1
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + huggingface-hub==1.20.1
+ + idna==3.18
+ + jinja2==3.1.6
+ + joblib==1.5.3
+ + kiwisolver==1.5.0
+ + markdown-it-py==4.2.0
+ + markupsafe==3.0.3
+ + matplotlib==3.11.0
+ + mdurl==0.1.2
+ + mpmath==1.3.0
+ + multidict==6.7.1
+ + multiprocess==0.70.19
+ + narwhals==2.22.1
+ + networkx==3.6.1
+ + numpy==2.5.0
+ + nvidia-cublas==13.1.1.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.20.0.48
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.29.7
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + packaging==26.2
+ + pandas==3.0.3
+ + parcelmate==0.1.0 (from file:///sailhome/schegini/parcelmate)
+ + pillow==12.2.0
+ + propcache==0.5.2
+ + pyarrow==24.0.0
+ + pygments==2.20.0
+ + pyparsing==3.3.2
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + regex==2026.5.9
+ + requests==2.34.2
+ + rich==15.0.0
+ + safetensors==0.8.0
+ + scikit-learn==1.9.0
+ + scipy==1.18.0
+ + seaborn==0.13.2
+ + setuptools==81.0.0
+ + shellingham==1.5.4
+ + six==1.17.0
+ + sympy==1.14.0
+ + threadpoolctl==3.6.0
+ + tokenizers==0.22.2
+ + torch==2.12.1
+ + tqdm==4.68.3
+ + transformers==5.12.1
+ + triton==3.7.1
+ + typer==0.25.1
+ + typing-extensions==4.15.0
+ + urllib3==2.7.0
+ + xxhash==3.7.0
+ + yarl==1.24.2
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py:747: UserWarning: Not enough free disk space to download the file. The expected file size is: 548.11 MB. The target location /sailhome/schegini/.cache/huggingface/hub/models--gpt2/blobs only has 387.97 MB free disk space.
+  warnings.warn(
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/sailhome/schegini/parcelmate/parcelmate/bin/main.py", line 26, in <module>
+    run_connectivity(
+  File "/sailhome/schegini/parcelmate/parcelmate/model.py", line 702, in run_connectivity
+    model, tokenizer = get_model_and_tokenizer(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/parcelmate/model.py", line 160, in get_model_and_tokenizer
+    model = AutoModel.from_pretrained(model_name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py", line 406, in from_pretrained
+    return model_class.from_pretrained(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4229, in from_pretrained
+    checkpoint_files, sharded_metadata = _get_resolved_checkpoint_files(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 678, in _get_resolved_checkpoint_files
+    resolved_archive_file = cached_file(pretrained_model_name_or_path, filename, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/utils/hub.py", line 293, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/utils/hub.py", line 527, in cached_files
+    raise e
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/transformers/utils/hub.py", line 437, in cached_files
+    hf_hub_download(
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1016, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1238, in _hf_hub_download_to_cache_dir
+    _download_to_tmp_and_move(
+  File "/sailhome/schegini/parcelmate/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1851, in _download_to_tmp_and_move
+    with tmp_path.open("wb") as f:
+OSError: [Errno 122] Disk quota exceeded

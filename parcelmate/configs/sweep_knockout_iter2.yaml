@@ -1,0 +1,10 @@
+# Iteration 2 sweep: knockout threshold x perturbation mode on gpt2.
+#   python -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout_iter2.yaml -g -a nlp -P sphinx -t 10 -m 24
+# 4 jobs: {mean,zero} x {0.5, 0.9}. Higher threshold -> sparser, more
+# baseline-able subnetworks (fixes the "baseline skipped" issue from iter0).
+base_config: parcelmate/configs/knockout_iter2.yaml
+name: knockout_iter2
+output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout_iter2
+grid:
+  knockout.knockout_mode: [mean, zero]
+  knockout.knockout_thresh: [0.5, 0.9]

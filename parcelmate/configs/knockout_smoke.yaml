@@ -1,0 +1,30 @@
+# Smoke-test base config for Project 3 knockout controls.
+# Deliberately tiny: validate the full pipeline + output-sync path end-to-end
+# and confirm the home-quota redirects work, NOT for scientific conclusions.
+output_dir: /nlp/scr/schegini/parcelmate/knockout_smoke
+
+connectivity:
+  model_name: gpt2
+  domains: [wikitext, tldr17]   # one "normal" text domain + Reddit
+  seq_len: 128
+  n_samples: 2
+  n_tokens: 5000
+  batch_size: 8
+
+parcellation:
+  n_networks: 10
+  n_samples: 3
+  connectivity_pca_components: 50
+
+subnetwork_extraction: {}
+
+knockout:
+  knockout_mode: mean       # overridden by the sweep grid (mean vs zero)
+  n_baseline: 1
+  baseline_seed: 0
+  networks: [0, 1]          # just two subnetworks for the smoke test
+  include_union: true
+  include_healthy: true
+  eval_loss: true
+  loss_n_tokens: 5000
+  steps: []

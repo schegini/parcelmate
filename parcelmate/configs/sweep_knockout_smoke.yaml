@@ -1,0 +1,7 @@
+# Smoke-test sweep: mean-out vs zero-out on the tiny knockout_smoke base config.
+#   python -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout_smoke.yaml -g -a nlp -P sphinx
+base_config: parcelmate/configs/knockout_smoke.yaml
+name: knockout_smoke
+output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke
+grid:
+  knockout.knockout_mode: [mean, zero]

@@ -1,0 +1,27 @@
+name: knockout_iter2
+output_root: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout_iter2
+runs:
+- tag: knockout_mode-mean__knockout_thresh-0.5
+  params:
+    knockout.knockout_mode: mean
+    knockout.knockout_thresh: 0.5
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_iter2/configs/knockout_iter2__knockout_mode-mean__knockout_thresh-0.5.yaml
+  output_dir: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout_iter2/knockout_mode-mean__knockout_thresh-0.5
+- tag: knockout_mode-mean__knockout_thresh-0.9
+  params:
+    knockout.knockout_mode: mean
+    knockout.knockout_thresh: 0.9
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_iter2/configs/knockout_iter2__knockout_mode-mean__knockout_thresh-0.9.yaml
+  output_dir: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout_iter2/knockout_mode-mean__knockout_thresh-0.9
+- tag: knockout_mode-zero__knockout_thresh-0.5
+  params:
+    knockout.knockout_mode: zero
+    knockout.knockout_thresh: 0.5
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_iter2/configs/knockout_iter2__knockout_mode-zero__knockout_thresh-0.5.yaml
+  output_dir: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout_iter2/knockout_mode-zero__knockout_thresh-0.5
+- tag: knockout_mode-zero__knockout_thresh-0.9
+  params:
+    knockout.knockout_mode: zero
+    knockout.knockout_thresh: 0.9
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_iter2/configs/knockout_iter2__knockout_mode-zero__knockout_thresh-0.9.yaml
+  output_dir: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout_iter2/knockout_mode-zero__knockout_thresh-0.9

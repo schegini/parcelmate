@@ -1,0 +1,13 @@
+name: knockout_scale
+output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout_scale
+runs:
+- tag: model_name-gpt2-medium
+  params:
+    connectivity.model_name: gpt2-medium
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_scale/configs/knockout_scale__model_name-gpt2-medium.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/knockout_scale/model_name-gpt2-medium
+- tag: model_name-gpt2-large
+  params:
+    connectivity.model_name: gpt2-large
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_scale/configs/knockout_scale__model_name-gpt2-large.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/knockout_scale/model_name-gpt2-large

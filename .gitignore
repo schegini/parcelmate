@@ -1,0 +1,24 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore environment
+.venv
+.env
+venv/
+
+# Ignore test output files
+reports/
+tests/*/*.txt
+results_knockout_test/
+
+# Ignore macOS directory metadata
+.DS_Store
+
+# Generated plots. These are regenerable from the h5 outputs on scratch, and
+# the connectivity heatmaps alone run to ~1GB. The knockout bar plots are the
+# figures we actually share, so they stay tracked; force-add anything else
+# worth keeping with `git add -f`.
+**/plots/*
+!**/plots/knockout/

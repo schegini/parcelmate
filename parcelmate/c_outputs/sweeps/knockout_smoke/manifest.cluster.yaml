@@ -1,0 +1,13 @@
+name: knockout_smoke
+output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke
+runs:
+- tag: knockout_mode-mean
+  params:
+    knockout.knockout_mode: mean
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_smoke/configs/knockout_smoke__knockout_mode-mean.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-mean
+- tag: knockout_mode-zero
+  params:
+    knockout.knockout_mode: zero
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout_smoke/configs/knockout_smoke__knockout_mode-zero.yaml
+  output_dir: /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke/knockout_mode-zero

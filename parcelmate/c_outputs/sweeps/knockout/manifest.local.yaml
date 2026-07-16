@@ -1,0 +1,13 @@
+name: knockout
+output_root: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout
+runs:
+- tag: knockout_mode-mean
+  params:
+    knockout.knockout_mode: mean
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout/configs/knockout__knockout_mode-mean.yaml
+  output_dir: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout/knockout_mode-mean
+- tag: knockout_mode-zero
+  params:
+    knockout.knockout_mode: zero
+  config_path: /sailhome/schegini/parcelmate/sweep_knockout/configs/knockout__knockout_mode-zero.yaml
+  output_dir: /Users/sebastianchegini/surf/fork/parcelmate/parcelmate/c_outputs/sweeps/knockout/knockout_mode-zero

@@ -4,9 +4,9 @@
 # knockout loss summary + plots with no extra flags.
 #
 # NOTE ON COST: the knockout step re-runs connectivity + loss once per condition,
-# and there is one condition per (network) plus (1 + n_baseline) per network plus
-# the union. Keep `networks` short and `n_baseline` small while iterating, and
-# expand once you know the run fits your time/GPU budget.
+# and there is (1 + n_baseline) conditions per network per mode. Keep `networks`
+# short and `n_baseline` small while iterating, and expand once you know the run
+# fits your time/GPU budget.
 output_dir: /nlp/scr/schegini/parcelmate/knockout
 
 connectivity:
@@ -26,12 +26,14 @@ parcellation:
 subnetwork_extraction: {}
 
 knockout:
-  knockout_mode: mean      # 'mean' = mean-out; 'zero' = zero-out
+  # Both modes share the one parcellation below, so mean-out and zero-out knock
+  # out the SAME neurons per network and can be compared directly in one plot.
+  knockout_mode: [mean, zero]   # 'mean' = mean-out; 'zero' = zero-out
   n_baseline: 3
   baseline_seed: 0
   networks: [0, 1, 2]      # restrict to the first 3 shared subnetworks; null = all
-  include_union: true
+  include_union: false     # union no longer analyzed; per-network only
   include_healthy: true
   eval_loss: true
   loss_n_tokens: 50000
-  steps: []                # per-condition stability plots off (loss plot always runs)
+  steps: [plot_stability]  # per-condition stability heatmaps (distilled + plotted per network too)

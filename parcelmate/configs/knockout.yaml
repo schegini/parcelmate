@@ -22,11 +22,18 @@ parcellation:
 subnetwork_extraction: {}
 
 knockout:
-  knockout_mode: mean      # 'mean' (clamp to cross-domain mean) or 'zero'
+  # Run both modes against the SAME parcellation so mean-out vs zero-out is a
+  # valid comparison (identical neurons per network). A single string still works.
+  knockout_mode: [mean, zero]   # 'mean' (clamp to a mean activation) and/or 'zero'
+  # mean_domain: wikitext  # clamp mean-out to one corpus's mean instead of the
+                           # cross-domain aggregate (must be one of `domains`
+                           # above); lets you clamp to wiki and watch how the
+                           # model then processes the other corpora. Default:
+                           # null -> cross-domain aggregate.
   n_baseline: 2            # size-matched random controls per condition
   baseline_seed: 0
   networks: [0]            # restrict to first shared network for a fast test
-  include_union: true
+  include_union: false     # union no longer analyzed; per-network only
   include_healthy: true
   eval_loss: true
   loss_n_tokens: 256

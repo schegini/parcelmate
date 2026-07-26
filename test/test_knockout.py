@@ -147,6 +147,36 @@ class TestSummarizeKnockoutLoss(unittest.TestCase):
             # CSV written next to the conditions
             self.assertTrue(os.path.exists(os.path.join(root, '%s_summary.csv' % LOSS_NAME)))
 
+    def test_mode_and_network_parsed_from_condition(self):
+        # When both modes run against the SAME parcellation, conditions are
+        # named `network<i>_<mode>` (+ `_baseline<s>`). The summary must recover
+        # the mode and the network label so mean-out and zero-out for the same
+        # network can be lined up as a real comparison.
+        with tempfile.TemporaryDirectory() as root:
+            self._write_condition(root, HEALTHY_NAME, {'wikitext': (4.0, 54.6, 5000)})
+            self._write_condition(root, 'network0_mean', {'wikitext': (9.0, 8103.0, 5000)})
+            self._write_condition(root, 'network0_zero', {'wikitext': (12.0, 9999.0, 5000)})
+            self._write_condition(root, 'network0_zero_%s0' % BASELINE_NAME,
+                                  {'wikitext': (5.5, 244.0, 5000)})
+            self._write_condition(root, 'union_mean', {'wikitext': (15.0, 9e5, 5000)})
+            df = summarize_knockout_loss(root, verbose=False)
+
+            by_cond = {c: (df[df['condition'] == c].iloc[0]) for c in df['condition']}
+            # mode recovered
+            self.assertEqual(by_cond['network0_mean']['mode'], 'mean')
+            self.assertEqual(by_cond['network0_zero']['mode'], 'zero')
+            self.assertEqual(by_cond['union_mean']['mode'], 'mean')
+            self.assertEqual(by_cond[HEALTHY_NAME]['mode'], '')
+            # network label recovered (same for both modes -> comparable)
+            self.assertEqual(by_cond['network0_mean']['network'], 'network0')
+            self.assertEqual(by_cond['network0_zero']['network'], 'network0')
+            self.assertEqual(by_cond['union_mean']['network'], 'union')
+            # a baseline keeps its mode + network so it matches its knockout
+            base = by_cond['network0_zero_%s0' % BASELINE_NAME]
+            self.assertEqual(base['kind'], 'baseline')
+            self.assertEqual(base['mode'], 'zero')
+            self.assertEqual(base['network'], 'network0')
+
     def test_multiple_domains_one_row_each(self):
         with tempfile.TemporaryDirectory() as root:
             self._write_condition(root, 'network1',

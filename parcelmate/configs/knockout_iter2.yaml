@@ -19,13 +19,13 @@ parcellation:
 subnetwork_extraction: {}
 
 knockout:
-  knockout_mode: mean       # overridden by grid
+  knockout_mode: [mean, zero]  # both modes share ONE parcellation per job
   knockout_thresh: 0.5      # overridden by grid
   n_baseline: 3
   baseline_seed: 0
   networks: [0, 1, 2, 3, 4]
-  include_union: true
+  include_union: false
   include_healthy: true
   eval_loss: true
   loss_n_tokens: 50000
-  steps: []
+  steps: [plot_stability]

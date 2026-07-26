@@ -1,6 +1,7 @@
 # Iteration 3 base config: does Project-3 selectivity survive on bigger models?
-# Same knockout settings as the gpt2 iteration-1 run (mean-out, thresh 0.5,
-# networks [0,1,2], 3 baselines) so results are comparable across model sizes.
+# Same knockout settings as the gpt2 iteration-1 run (mean-out + zero-out against
+# one parcellation, thresh 0.5, networks [0,1,2], 3 baselines) so results are
+# comparable across model sizes.
 # The sweep grids connectivity.model_name over gpt2-medium / gpt2-large.
 # batch_size reduced for the larger activations.
 output_dir: /nlp/scr/schegini/parcelmate/knockout_scale
@@ -21,7 +22,7 @@ parcellation:
 subnetwork_extraction: {}
 
 knockout:
-  knockout_mode: mean
+  knockout_mode: [mean, zero]  # both modes share ONE parcellation per model
   knockout_thresh: 0.5
   n_baseline: 3
   baseline_seed: 0

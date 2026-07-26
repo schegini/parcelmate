@@ -1,7 +1,10 @@
-# Smoke-test sweep: mean-out vs zero-out on the tiny knockout_smoke base config.
+# Smoke-test sweep for the tiny knockout_smoke base config. Mean-out vs zero-out
+# is no longer a sweep axis: both modes run within the single job against one
+# parcellation (knockout_mode: [mean, zero] in the base config). This "sweep" is
+# now just one end-to-end job that exercises the output-sync path.
 #   python -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout_smoke.yaml -g -a nlp -P sphinx
 base_config: parcelmate/configs/knockout_smoke.yaml
 name: knockout_smoke
 output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout_smoke
 grid:
-  knockout.knockout_mode: [mean, zero]
+  knockout.knockout_thresh: [0.5]

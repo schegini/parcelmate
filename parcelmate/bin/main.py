@@ -66,7 +66,8 @@ if __name__ == '__main__':
         )
 
     if 'plot_knockout' in steps:
-        plot_knockout_loss(
-            output_dir=cfg.get('output_dir', OUTPUT_DIR)
-        )
+        output_dir = cfg.get('output_dir', OUTPUT_DIR)
+        summarize_knockout_stability(os.path.join(output_dir, KNOCKOUT_NAME))
+        plot_knockout_loss(output_dir=output_dir)
+        plot_knockout_stability(output_dir=output_dir)
 

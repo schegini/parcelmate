@@ -302,8 +302,12 @@ repo:
 
 - `parcelmate/configs/knockout_cluster.yaml` — base config (gpt2, a few domains,
   a `knockout:` block; see the README for every knob).
-- `parcelmate/configs/sweep_knockout.yaml` — spec that sweeps
-  `knockout.knockout_mode: [mean, zero]` (mean-out vs zero-out).
+- `parcelmate/configs/sweep_knockout.yaml` — spec for a single knockout run.
+  Mean-out vs zero-out is **not** a sweep axis: `knockout_mode: [mean, zero]` in
+  the base config runs both modes within one job against the one parcellation of
+  the healthy model, so they knock out the same neurons and stay comparable. A
+  separate job per mode would re-parcellate and defeat the comparison. Sweep only
+  axes that each deserve their own parcellation (e.g. `parcellation.n_networks`).
 
 Full workflow after logging in:
 
@@ -319,7 +323,7 @@ less sweep_knockout/configs/*.yaml
 # Generate configs + .pbs and submit (GPU node; use your account/partition).
 python3 -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout.yaml -g -a nlp -P sphinx -t 24 -m 16
 
-squeue -u <CSID>            # one job per grid point (mean, zero)
+squeue -u <CSID>            # one job (both modes run inside it)
 ```
 
 Each run resumes from any connectivity/parcellation outputs already on disk
@@ -340,9 +344,12 @@ Collect results the same way as any sweep:
 python3 -m parcelmate.bin.collect sweep_knockout/manifest.yaml
 ```
 
-The dashboard shows the per-domain knockout-loss bar charts
-(`plots/knockout/knockout_<domain>.png`: healthy vs subnetwork-knockout vs
-baseline). The exact numbers live in each run's
+The dashboard shows the per-network knockout bar charts
+(`plots/knockout/knockout_<network>_<metric>.png`: the five conditions — healthy,
+mean-out network, mean-out random, zero-out network, zero-out random — faceted by
+domain, so each network's mean-out vs zero-out effect sits next to its
+size-matched random baseline and the healthy reference). The exact numbers live
+in each run's
 `<output_dir>/knockout/loss_summary.csv` — pull them alongside the plots:
 
 ```bash

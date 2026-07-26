@@ -576,34 +576,45 @@ def compute_mean_activations(
         verbose=True,
         indent=0
 ):
-    """Compute each neuron's mean activation over a text sample spanning ALL
-    domains (a single cross-domain scalar per unit). Used as the "mean-out"
-    clamp value: knocking a neuron out sets it to this global mean rather than
-    to zero. Cached to ``mean_activations.h5`` under ``output_dir``.
+    """Compute each neuron's mean activation, both per-corpus and aggregated
+    across ALL domains. Used as the "mean-out" clamp value: knocking a neuron out
+    sets it to a mean activation rather than to zero. The cross-domain aggregate
+    is the default clamp; the per-corpus vectors let you clamp a network to a
+    single corpus (e.g. wikitext) and then observe how the model processes a
+    different corpus (e.g. reddit/tldr17). Cached to ``mean_activations.h5``
+    under ``output_dir``.
 
-    Returns ``(mean_activations, coordinates)`` aligned row-for-row with the
-    coordinates produced by ``get_timecourses``.
+    Returns ``(mean_activations, domain_means, coordinates)`` where
+    ``mean_activations`` is the cross-domain aggregate (<n_units>), ``domain_means``
+    maps each domain name to its own per-corpus mean vector (<n_units>), and
+    ``coordinates`` is aligned row-for-row with every vector (as produced by
+    ``get_timecourses``).
     """
     if model_kwargs is None:
         model_kwargs = {}
     if n_tokens is None:
         n_tokens = (N_TOKENS // (seq_len * batch_size)) * seq_len * batch_size
 
-    filepath = os.path.join(output_dir, '%s%s' % (MEAN_ACTIVATION_NAME, EXTENSION))
-    if os.path.exists(filepath) and not overwrite:
-        data = load_h5_data(filepath, verbose=verbose, indent=indent)
-        if 'mean_activations' in data and 'coordinates' in data:
-            return data['mean_activations'], data['coordinates']
-
     if isinstance(domains, str):
         domains = (domains,)
 
+    filepath = os.path.join(output_dir, '%s%s' % (MEAN_ACTIVATION_NAME, EXTENSION))
+    if os.path.exists(filepath) and not overwrite:
+        data = load_h5_data(filepath, verbose=verbose, indent=indent)
+        cached = _unpack_mean_activations(data)
+        # Only reuse the cache if it carries per-corpus means for every requested
+        # domain; otherwise fall through and recompute (e.g. an older cache that
+        # predates per-corpus collection).
+        if cached is not None and all(d in cached[1] for d in domains):
+            return cached
+
     if verbose:
-        stderr('%sComputing cross-domain mean activations\n' % (' ' * indent))
+        stderr('%sComputing per-corpus and cross-domain mean activations\n' % (' ' * indent))
     indent += 2
 
     model, tokenizer = get_model_and_tokenizer(model_name)
 
+    domain_means = {}
     running_sum = None
     running_count = 0
     coordinates = None
@@ -636,20 +647,29 @@ def compute_mean_activations(
         )
         timecourses = out['timecourses']  # <n_units, n_tokens>
         coordinates = out['coordinates']
-        # Weight by token count so domains contribute proportionally.
+        domain_sum = timecourses.sum(axis=1).astype(np.float64)
+        domain_count = timecourses.shape[1]
+        # Per-corpus mean (this is the vector you clamp a network to).
+        domain_means[domain] = (domain_sum / max(domain_count, 1)).astype(np.float32)
+        # Weight by token count so the aggregate mixes domains proportionally.
         if running_sum is None:
-            running_sum = timecourses.sum(axis=1).astype(np.float64)
+            running_sum = domain_sum.copy()
         else:
-            running_sum += timecourses.sum(axis=1)
-        running_count += timecourses.shape[1]
+            running_sum += domain_sum
+        running_count += domain_count
 
     mean_activations = (running_sum / max(running_count, 1)).astype(np.float32)
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    # Stack the per-corpus means row-for-row with ``domain_names`` so they can be
+    # round-tripped through the flat h5 store.
+    domain_names = list(domain_means)
     save_h5_data(
         dict(
             mean_activations=mean_activations,
+            domain_means=np.stack([domain_means[d] for d in domain_names], axis=0),
+            domains=np.array([d.encode('utf-8') for d in domain_names]),
             coordinates=coordinates
         ),
         filepath,
@@ -657,7 +677,20 @@ def compute_mean_activations(
         indent=indent
     )
 
-    return mean_activations, coordinates
+    return mean_activations, domain_means, coordinates
+
+
+def _unpack_mean_activations(data):
+    """Reconstruct ``(mean_activations, domain_means, coordinates)`` from a loaded
+    ``mean_activations.h5`` payload, or ``None`` if it lacks per-corpus means."""
+    required = ('mean_activations', 'domain_means', 'domains', 'coordinates')
+    if not all(k in data for k in required):
+        return None
+    names = [d.decode('utf-8') if isinstance(d, bytes) else str(d)
+             for d in data['domains']]
+    domain_means = {name: np.asarray(row)
+                    for name, row in zip(names, np.asarray(data['domain_means']))}
+    return data['mean_activations'], domain_means, data['coordinates']
 
 
 def run_connectivity(
@@ -1025,6 +1058,16 @@ def run_subnetwork_extraction(
     )
 
 
+def _mode_label(mode, mean_domain=None):
+    """Condition-name token for a knockout mode. A corpus-specific mean-out clamp
+    is tagged with the corpus (e.g. ``mean-wikitext``) so runs against different
+    clamp corpora land in distinct output directories; the ``_mean``/``_zero``
+    prefix stays intact so ``summarize_knockout_loss`` still parses the mode."""
+    if mode == 'mean' and mean_domain is not None:
+        return 'mean-%s' % mean_domain
+    return mode
+
+
 def _run_knockout_condition(
         name,
         knockout_root,
@@ -1129,10 +1172,11 @@ def run_knockout(
         connectivity_kwargs=None,
         knockout_thresh=0.5,
         knockout_mode='mean',
+        mean_domain=None,
         n_baseline=3,
         baseline_seed=0,
         networks=None,
-        include_union=True,
+        include_union=False,
         include_healthy=True,
         eval_loss=True,
         loss_n_tokens=None,
@@ -1141,12 +1185,15 @@ def run_knockout(
         verbose=True,
         indent=0
 ):
-    """Knock out each extracted subnetwork individually (plus, optionally, the
-    union of all of them), each against ``n_baseline`` size-matched controls
-    drawn uniformly at random from the un-knocked-out complement. Every
-    condition is evaluated with both connectivity and LM loss so selectivity can
-    be tested: a subnetwork is "special" only if knocking it out hurts more than
-    knocking out the same number of random neurons.
+    """Knock out each extracted subnetwork individually, each against
+    ``n_baseline`` size-matched controls drawn uniformly at random from the
+    un-knocked-out complement. Every condition is evaluated with both
+    connectivity and LM loss so selectivity can be tested: a subnetwork is
+    "special" only if knocking it out hurts more than knocking out the same
+    number of random neurons.
+
+    The all-networks ``union`` condition is no longer analyzed by default
+    (``include_union=False``); analysis is per-network.
     """
     connectivity_kwargs = dict(connectivity_kwargs or {})
     # These are supplied explicitly below; drop from the passthrough to avoid
@@ -1155,25 +1202,44 @@ def run_knockout(
         model_name = connectivity_kwargs.pop('model_name')
     connectivity_kwargs.pop('overwrite', None)
 
-    assert knockout_mode in ('mean', 'zero'), 'knockout_mode must be "mean" or "zero"'
+    # ``knockout_mode`` may be a single mode or a list of modes. When several are
+    # given they are all run against the SAME parcellation loaded below (and the
+    # same per-network selection + baselines), so mean-out vs zero-out is a valid
+    # like-for-like comparison rather than two independent parcellations.
+    if isinstance(knockout_mode, str):
+        modes = [knockout_mode]
+    else:
+        modes = list(knockout_mode)
+    # De-duplicate while preserving order.
+    _seen = set()
+    modes = [m for m in modes if not (m in _seen or _seen.add(m))]
+    assert modes, 'knockout_mode must specify at least one mode'
+    for _m in modes:
+        assert _m in ('mean', 'zero'), \
+            'knockout_mode must be "mean" or "zero" (got %r)' % (_m,)
 
     subnetwork_dir = os.path.join(output_dir, SUBNETWORK_NAME)
     knockout_root = os.path.join(output_dir, KNOCKOUT_NAME)
 
     if verbose:
-        stderr('Running knockout (mode=%s)\n' % knockout_mode)
+        stderr('Running knockout (modes=%s)\n' % ', '.join(modes))
     indent += 2
 
     if not os.path.exists(knockout_root):
         os.makedirs(knockout_root)
 
-    # Cross-domain mean activations (computed once, cached) for "mean-out".
+    # Mean activations (computed once, cached) for "mean-out". ``compute_mean_activations``
+    # returns both the cross-domain aggregate and a per-corpus mean for every
+    # domain. ``mean_domain`` selects which vector the knocked-out units are
+    # clamped to: ``None`` uses the cross-domain aggregate (original behavior),
+    # while e.g. ``'wikitext'`` clamps the network to that corpus so you can then
+    # observe how the model processes the other domains.
     mean_activations = None
-    if knockout_mode == 'mean':
+    if 'mean' in modes:
         mean_allowed = {'domains', 'seq_len', 'n_tokens', 'split', 'take',
                         'wrap', 'shuffle', 'batch_size', 'data_kwargs', 'model_kwargs'}
         mean_kwargs = {k: v for k, v in connectivity_kwargs.items() if k in mean_allowed}
-        mean_activations, mean_coordinates = compute_mean_activations(
+        aggregate_mean, domain_means, mean_coordinates = compute_mean_activations(
             model_name=model_name,
             output_dir=knockout_root,
             overwrite=overwrite,
@@ -1181,6 +1247,15 @@ def run_knockout(
             indent=indent,
             **mean_kwargs
         )
+        if mean_domain is None:
+            mean_activations = aggregate_mean
+        else:
+            assert mean_domain in domain_means, \
+                'mean_domain %r not among collected corpora: %s' % (
+                    mean_domain, ', '.join(sorted(domain_means)))
+            mean_activations = domain_means[mean_domain]
+            if verbose:
+                stderr('%sClamping mean-out to the %s corpus\n' % (' ' * indent, mean_domain))
 
     for path in os.listdir(subnetwork_dir):
         match = INPUT_NAME_RE.match(path)
@@ -1212,49 +1287,63 @@ def run_knockout(
 
         net_indices = list(range(n_networks)) if networks is None else list(networks)
         for network_ix in net_indices:
+            # The selection (and its baselines) depend only on the parcellation
+            # and threshold, so they are computed once and reused across modes:
+            # every mode knocks out exactly the same neurons.
             _, sel = select_knockout(coordinates, probs, knockout_thresh, network_ix=network_ix)
             if int(sel.sum()) == 0:
                 if verbose:
                     stderr('%sNetwork %d has no units above threshold; skipping\n' % (
                         ' ' * indent, network_ix))
                 continue
-            # Real subnetwork knockout.
-            _run_knockout_condition(
-                'network%d' % network_ix, knockout_root, model_name, coordinates, sel=sel,
-                mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
-                eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
-                overwrite=overwrite, verbose=verbose, indent=indent
-            )
-            # Size-matched random baselines from the complement.
-            _run_baselines(
-                'network%d' % network_ix, knockout_root, model_name, coordinates, sel,
-                mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
-                n_baseline=n_baseline, baseline_seed=baseline_seed,
-                eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
-                overwrite=overwrite, verbose=verbose, indent=indent
-            )
-
-        # Union of all subnetworks (original behavior) + its baselines.
-        if include_union and n_networks > 1:
-            _, sel = select_knockout(coordinates, probs, knockout_thresh, network_ix=None)
-            if int(sel.sum()) > 0:
+            for mode in modes:
+                mode_mean = mean_activations if mode == 'mean' else None
+                condition = 'network%d_%s' % (network_ix, _mode_label(mode, mean_domain))
+                # Real subnetwork knockout.
                 _run_knockout_condition(
-                    'union', knockout_root, model_name, coordinates, sel=sel,
-                    mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
+                    condition, knockout_root, model_name, coordinates, sel=sel,
+                    mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
                     eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
                     overwrite=overwrite, verbose=verbose, indent=indent
                 )
+                # Size-matched random baselines from the complement.
                 _run_baselines(
-                    'union', knockout_root, model_name, coordinates, sel,
-                    mean_activations=mean_activations, connectivity_kwargs=connectivity_kwargs,
+                    condition, knockout_root, model_name, coordinates, sel,
+                    mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
                     n_baseline=n_baseline, baseline_seed=baseline_seed,
                     eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
                     overwrite=overwrite, verbose=verbose, indent=indent
                 )
 
+        # Union of all subnetworks (original behavior) + its baselines.
+        if include_union and n_networks > 1:
+            _, sel = select_knockout(coordinates, probs, knockout_thresh, network_ix=None)
+            if int(sel.sum()) > 0:
+                for mode in modes:
+                    mode_mean = mean_activations if mode == 'mean' else None
+                    condition = 'union_%s' % _mode_label(mode, mean_domain)
+                    _run_knockout_condition(
+                        condition, knockout_root, model_name, coordinates, sel=sel,
+                        mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
+                        eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                        overwrite=overwrite, verbose=verbose, indent=indent
+                    )
+                    _run_baselines(
+                        condition, knockout_root, model_name, coordinates, sel,
+                        mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
+                        n_baseline=n_baseline, baseline_seed=baseline_seed,
+                        eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                        overwrite=overwrite, verbose=verbose, indent=indent
+                    )
+
     if eval_loss:
         summarize_knockout_loss(knockout_root, verbose=verbose, indent=indent)
         plot_knockout_loss(output_dir=output_dir, verbose=verbose, indent=indent)
+
+    # Distil each condition's stability heatmaps into a single median-correlation
+    # value per scope and plot them per network alongside the loss/perplexity bars.
+    summarize_knockout_stability(knockout_root, verbose=verbose, indent=indent)
+    plot_knockout_stability(output_dir=output_dir, verbose=verbose, indent=indent)
 
 
 def summarize_knockout_loss(knockout_root, verbose=True, indent=0):
@@ -1277,10 +1366,26 @@ def summarize_knockout_loss(knockout_root, verbose=True, indent=0):
             kind = 'baseline'
         else:
             kind = 'knockout'
+        # Parse the knockout mode ('mean'/'zero') and the network label out of the
+        # condition name (e.g. 'network0_mean', 'union_zero_baseline1'). Legacy
+        # single-mode conditions ('network0') carry no mode token -> mode = ''.
+        mode = ''
+        for _m in ('mean', 'zero'):
+            if ('_%s' % _m) in name or name == _m:
+                mode = _m
+                break
+        if name == HEALTHY_NAME:
+            network_label = HEALTHY_NAME
+        elif mode:
+            network_label = name.split('_%s' % mode)[0]
+        else:
+            network_label = name
         for domain in domains:
             rows.append(dict(
                 condition=name,
                 kind=kind,
+                mode=mode,
+                network=network_label,
                 domain=domain,
                 loss=float(data['%s_loss' % domain]),
                 perplexity=float(data['%s_perplexity' % domain]),

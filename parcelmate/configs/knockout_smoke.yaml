@@ -19,7 +19,7 @@ parcellation:
 subnetwork_extraction: {}
 
 knockout:
-  knockout_mode: mean       # overridden by the sweep grid (mean vs zero)
+  knockout_mode: [mean, zero]  # both modes share ONE parcellation
   n_baseline: 1
   baseline_seed: 0
   networks: [0, 1]          # just two subnetworks for the smoke test

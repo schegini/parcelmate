@@ -1,11 +1,15 @@
-# Iteration 2 sweep: knockout threshold on gpt2.
+# Iteration 2 sweep: gpt2 knockout selectivity.
 #   python -m parcelmate.bin.sweep parcelmate/configs/sweep_knockout_iter2.yaml -g -a nlp -P sphinx -t 10 -m 24
-# 2 jobs: thresh {0.5, 0.9}; each runs BOTH mean-out and zero-out against its own
-# single parcellation (knockout_mode: [mean, zero] in the base config), so the
-# mode comparison stays valid. Higher threshold -> sparser, more baseline-able
-# subnetworks (fixes the "baseline skipped" issue from iter0).
+#
+# ONE job. Both knockout modes (mean/zero) and both thresholds (0.5/0.9) run
+# inside it against that job's single parcellation -- see the knockout block of
+# the base config. Threshold was a grid axis in the first iter2 attempt, which
+# was a mistake: each grid point re-parcellated, so `network0` at 0.5 and
+# `network0` at 0.9 were unrelated neuron sets and no difference between them
+# could be attributed to the threshold. Add a grid axis here only if each of its
+# values should get its OWN parcellation (e.g. parcellation.n_networks).
 base_config: parcelmate/configs/knockout_iter2.yaml
 name: knockout_iter2
 output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout_iter2
 grid:
-  knockout.knockout_thresh: [0.5, 0.9]
+  parcellation.n_networks: [50]

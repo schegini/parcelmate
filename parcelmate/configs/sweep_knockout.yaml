@@ -7,11 +7,13 @@
 # Each grid point is a full pipeline run (connectivity -> parcellation ->
 # subnetwork_extraction -> subnetwork_knockout) writing to its own output_dir.
 #
-# NOTE: mean-out vs zero-out is NOT a sweep axis. Both modes run within a single
-# job against the one parcellation of the healthy model (`knockout_mode:
-# [mean, zero]` in the base config), which is the only way the comparison is
-# valid -- a separate job per mode would re-parcellate and knock out different
-# neurons. Only sweep axes that should each get their OWN parcellation.
+# NOTE: neither mean-out vs zero-out NOR the selection threshold is a sweep
+# axis. Both are applied AFTER parcellation, so both run within a single job
+# against the one parcellation of the healthy model (`knockout_mode:
+# [mean, zero]`, `knockout_thresh: [0.5, 0.9]` in the base config), which is the
+# only way those comparisons are valid -- a separate job per value would
+# re-parcellate, so its network indices would refer to different neurons.
+# Only sweep axes that should each get their OWN parcellation.
 
 base_config: parcelmate/configs/knockout_cluster.yaml
 name: knockout
@@ -22,7 +24,7 @@ output_root: /nlp/scr/schegini/parcelmate/sweeps/knockout
 # Dotted keys index into the base config; the sweep runs the cartesian product.
 # Each axis below yields a distinct parcellation, so it is legitimately swept.
 grid:
-  # Example axes (uncomment to use); mean-out/zero-out is handled in-run, not here:
-  # parcellation.n_networks: [25, 50, 100]
+  # Example axes (uncomment to use). knockout_mode and knockout_thresh are
+  # handled in-run, not here -- see the NOTE above.
   # knockout.n_baseline: [3, 5]
-  knockout.knockout_thresh: [0.5]
+  parcellation.n_networks: [50]

@@ -303,11 +303,14 @@ repo:
 - `parcelmate/configs/knockout_cluster.yaml` — base config (gpt2, a few domains,
   a `knockout:` block; see the README for every knob).
 - `parcelmate/configs/sweep_knockout.yaml` — spec for a single knockout run.
-  Mean-out vs zero-out is **not** a sweep axis: `knockout_mode: [mean, zero]` in
-  the base config runs both modes within one job against the one parcellation of
-  the healthy model, so they knock out the same neurons and stay comparable. A
-  separate job per mode would re-parcellate and defeat the comparison. Sweep only
-  axes that each deserve their own parcellation (e.g. `parcellation.n_networks`).
+  Neither the knockout mode nor the selection threshold is a sweep axis:
+  `knockout_mode: [mean, zero]` and `knockout_thresh: [0.5, 0.9]` in the base
+  config run every combination within one job against the one parcellation of
+  the healthy model, so the comparisons are like-for-like. Both knobs apply
+  *after* parcellation, so a separate job per value would re-parcellate — and
+  because parcellation is stochastic, `network0` in one job and `network0` in
+  the next would be unrelated neuron sets. Sweep only axes that each deserve
+  their own parcellation (e.g. `parcellation.n_networks`).
 
 Full workflow after logging in:
 
@@ -330,13 +333,19 @@ Each run resumes from any connectivity/parcellation outputs already on disk
 (`overwrite` defaults off), so re-submitting only recomputes what is missing.
 
 **Watch the cost.** The knockout step re-runs connectivity + loss once per
-condition: one per network in `knockout.networks`, plus `1 + n_baseline` per
-network, plus the union — each over every domain in `connectivity.domains`.
-Keep `networks` short (e.g. `[0, 1, 2]`) and `n_baseline` small (e.g. 3) while
-iterating; cap the loss pass with `knockout.loss_n_tokens`. If a knockout
-selects more than half of all units, its random baseline is skipped (no equal
-sized disjoint set exists) and the job logs a warning — raise
-`knockout.knockout_thresh` toward 1.0 for a sparser, baseline-able selection.
+condition, and the conditions multiply out as
+
+    networks x thresholds x modes x (1 + n_baseline)   + 1 healthy
+
+each over every domain in `connectivity.domains`. Five networks at two
+thresholds and two modes with three baselines is 81 conditions, so keep
+`networks` short (e.g. `[0, 1, 2]`) and `n_baseline` small (e.g. 2–3) while
+iterating, add thresholds one at a time, and cap the loss pass with
+`knockout.loss_n_tokens`. Two silent-ish skips to expect in the log: a network
+with no units at/above a threshold is skipped at that threshold (normal at 0.9,
+and it simply leaves that row of the figure empty), and a knockout selecting
+more than half of all units has its random baseline skipped, since no equal
+sized disjoint set exists — that one is a reason to raise the threshold.
 
 Collect results the same way as any sweep:
 
@@ -348,8 +357,9 @@ The dashboard shows the per-network knockout bar charts
 (`plots/knockout/knockout_<network>_<metric>.png`: the five conditions — healthy,
 mean-out network, mean-out random, zero-out network, zero-out random — faceted by
 domain, so each network's mean-out vs zero-out effect sits next to its
-size-matched random baseline and the healthy reference). The exact numbers live
-in each run's
+size-matched random baseline and the healthy reference; one row per selection
+threshold, sharing a y-axis down each column so the threshold comparison reads
+vertically). The exact numbers live in each run's
 `<output_dir>/knockout/loss_summary.csv` — pull them alongside the plots:
 
 ```bash

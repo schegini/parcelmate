@@ -27,13 +27,17 @@ more than removing the same number of random neurons. Each condition is evaluate
 with both connectivity and next-token LM loss/perplexity; results are collected
 into `<output_dir>/knockout/loss_summary.csv`.
 
-The networks come **only** from the parcellation of the healthy model. When
-`knockout_mode` lists more than one mode, every mode is run against that *same*
-parcellation and the *same* per-network selection (and baselines), so mean-out
-and zero-out knock out identical neurons per network and are directly comparable.
-Conditions are named `network<i>_<mode>` (e.g. `network0_mean`, `network0_zero`),
-and `loss_summary.csv` carries `mode` and `network` columns so the two modes line
-up per network — the knockout plot draws them side by side.
+The networks come **only** from the parcellation of the healthy model.
+`knockout_mode` and `knockout_thresh` both accept a list, and every combination
+runs against that *same* parcellation: the mode decides what knocked-out units
+are clamped to, the threshold decides how much of a network counts as "in it",
+and both are applied after the networks have been found. So mean-out vs zero-out
+and 0.5 vs 0.9 are all like-for-like comparisons within one run.
+
+Conditions are named `network<i>_thresh<t>_<mode>` (e.g. `network0_thresh0.9_mean`),
+and `loss_summary.csv` carries `network`, `thresh` and `mode` columns so every
+combination lines up per network — the knockout plot draws modes side by side and
+thresholds one above the other.
 
 Configure it with a `knockout` block (see `parcelmate/configs/knockout.yaml` for a
 small offline example):
@@ -45,6 +49,11 @@ knockout:
                                # cross-domain mean activation ("mean-out"),
                                # 'zero' clamps to zero. A single string
                                # (e.g. `mean`) runs just that one mode.
+  knockout_thresh: [0.5, 0.9]  # membership cutoff for "in the network"; a list
+                               # runs each against the SAME parcellation. A bare
+                               # number (e.g. 0.5) runs just that one. Higher =
+                               # sparser selection; a network with no units left
+                               # is skipped at that threshold.
   n_baseline: 3         # size-matched random controls per condition
   baseline_seed: 0
   networks: null        # null = every subnetwork; or a list of indices, e.g. [0, 2]
@@ -64,10 +73,13 @@ python -m parcelmate.bin.main your_config.yaml -s subnetwork_knockout
 (`<output_dir>/plots/knockout/knockout_<network>_<metric>.png`, e.g.
 `knockout_network0_loss.png`), each showing the five conditions — healthy,
 mean-out network, mean-out random, zero-out network, zero-out random — faceted by
-domain. Regenerate just the plots from an existing summary with `-s plot_knockout`.
+domain, with one row per threshold. Regenerate just the plots from an existing
+summary with `-s plot_knockout`.
 
-Mean-out vs zero-out is handled *within* a single run (above), not by the sweep —
-a separate job per mode would re-parcellate and knock out different neurons. To
+Mode and threshold are both handled *within* a single run (above), not by the
+sweep — a separate job per value would re-parcellate and knock out different
+neurons, so the thing you meant to vary would be confounded with a fresh
+stochastic parcellation. To
 sweep settings that each warrant their own parcellation (e.g. `n_networks`)
 across SLURM jobs and collect the results into one dashboard, see the
 [Sweeping the subnetwork knockout controls](CLUSTER.md#sweeping-the-subnetwork-knockout-controls-project-3)

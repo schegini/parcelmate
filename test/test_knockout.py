@@ -25,6 +25,7 @@ from parcelmate.model import (
     sample_baseline_selection,
     summarize_knockout_loss,
 )
+from parcelmate.plot import parse_condition_name, thresh_token
 from parcelmate.util import save_h5_data
 from parcelmate.constants import LOSS_NAME, EXTENSION, HEALTHY_NAME, BASELINE_NAME
 
@@ -74,6 +75,61 @@ class TestSelectKnockout(unittest.TestCase):
         self.assertLessEqual(int(hi.sum()), int(lo.sum()))
         # every high-threshold unit is also selected at the lower threshold
         self.assertTrue(np.all(lo[hi]))
+
+
+class TestConditionNames(unittest.TestCase):
+    """The condition name is the only record of which (network, threshold, mode)
+    a result belongs to, so the writer and the parser must round-trip. If they
+    drift, results get silently attributed to the wrong threshold."""
+
+    def test_thresh_token_round_trips(self):
+        for thresh in (0.5, 0.9, 0.05, 1.0):
+            name = 'network3_%s_mean' % thresh_token(thresh)
+            kind, mode, network, parsed = parse_condition_name(name)
+            self.assertEqual(kind, 'knockout')
+            self.assertEqual(mode, 'mean')
+            self.assertEqual(network, 'network3')
+            self.assertAlmostEqual(parsed, thresh, places=6)
+
+    def test_baseline_keeps_network_thresh_and_mode(self):
+        # A baseline must land on the same (network, threshold, mode) as the
+        # knockout it controls for, or the matched pair breaks apart.
+        name = 'network0_%s_zero_%s2' % (thresh_token(0.9), BASELINE_NAME)
+        kind, mode, network, thresh = parse_condition_name(name)
+        self.assertEqual(kind, 'baseline')
+        self.assertEqual(mode, 'zero')
+        self.assertEqual(network, 'network0')
+        self.assertAlmostEqual(thresh, 0.9, places=6)
+
+    def test_corpus_tagged_mean_out_still_parses(self):
+        # `mean_domain` tags the mode token (mean-wikitext); the threshold sits
+        # before it and must survive.
+        kind, mode, network, thresh = parse_condition_name(
+            'network1_%s_mean-wikitext' % thresh_token(0.5))
+        self.assertEqual(kind, 'knockout')
+        self.assertEqual(mode, 'mean')
+        self.assertEqual(network, 'network1')
+        self.assertAlmostEqual(thresh, 0.5, places=6)
+
+    def test_healthy_has_no_threshold(self):
+        kind, mode, network, thresh = parse_condition_name(HEALTHY_NAME)
+        self.assertEqual(kind, 'healthy')
+        self.assertEqual(mode, '')
+        self.assertEqual(network, HEALTHY_NAME)
+        self.assertTrue(np.isnan(thresh))
+
+    def test_legacy_names_parse_with_nan_threshold(self):
+        # Runs predating the in-run threshold loop carry no token; they must
+        # still summarize, just without a threshold.
+        _, mode, network, thresh = parse_condition_name('network0_mean')
+        self.assertEqual(mode, 'mean')
+        self.assertEqual(network, 'network0')
+        self.assertTrue(np.isnan(thresh))
+
+        kind, _, network, thresh = parse_condition_name('network0_%s1' % BASELINE_NAME)
+        self.assertEqual(kind, 'baseline')
+        self.assertEqual(network, 'network0')
+        self.assertTrue(np.isnan(thresh))
 
 
 class TestBaselineSelection(unittest.TestCase):
@@ -176,6 +232,29 @@ class TestSummarizeKnockoutLoss(unittest.TestCase):
             self.assertEqual(base['kind'], 'baseline')
             self.assertEqual(base['mode'], 'zero')
             self.assertEqual(base['network'], 'network0')
+
+    def test_threshold_recovered_into_its_own_column(self):
+        # Two thresholds against ONE parcellation: the summary must separate
+        # them, because network0 at 0.5 and network0 at 0.9 are different
+        # (nested) neuron sets drawn from the same network.
+        with tempfile.TemporaryDirectory() as root:
+            self._write_condition(root, HEALTHY_NAME, {'wikitext': (4.0, 54.6, 5000)})
+            self._write_condition(root, 'network0_%s_mean' % thresh_token(0.5),
+                                  {'wikitext': (9.0, 8103.0, 5000)})
+            self._write_condition(root, 'network0_%s_mean' % thresh_token(0.9),
+                                  {'wikitext': (6.0, 403.0, 5000)})
+            df = summarize_knockout_loss(root, verbose=False)
+
+            net = df[df['kind'] == 'knockout']
+            self.assertEqual(sorted(net['thresh']), [0.5, 0.9])
+            # same network label at both thresholds -> they line up as a
+            # comparison rather than as two unrelated networks
+            self.assertEqual(set(net['network']), {'network0'})
+            by_thresh = dict(zip(net['thresh'], net['loss']))
+            self.assertAlmostEqual(by_thresh[0.5], 9.0, places=5)
+            self.assertAlmostEqual(by_thresh[0.9], 6.0, places=5)
+            # the healthy reference belongs to no single threshold
+            self.assertTrue(np.isnan(df[df['kind'] == 'healthy']['thresh'].iloc[0]))
 
     def test_multiple_domains_one_row_each(self):
         with tempfile.TemporaryDirectory() as root:

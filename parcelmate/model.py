@@ -1192,6 +1192,10 @@ def run_knockout(
     "special" only if knocking it out hurts more than knocking out the same
     number of random neurons.
 
+    ``knockout_mode`` and ``knockout_thresh`` each accept a list. Both are
+    applied after parcellation, so every value runs against the one parcellation
+    of the healthy model and the comparisons between them are like-for-like.
+
     The all-networks ``union`` condition is no longer analyzed by default
     (``include_union=False``); analysis is per-network.
     """
@@ -1218,11 +1222,28 @@ def run_knockout(
         assert _m in ('mean', 'zero'), \
             'knockout_mode must be "mean" or "zero" (got %r)' % (_m,)
 
+    # ``knockout_thresh`` may likewise be a single value or a list, and for the
+    # same reason: the threshold is applied by ``select_knockout`` to an
+    # already-fixed parcellation, so it is a post-parcellation knob, not a
+    # property of the model being parcellated. Running several thresholds here
+    # compares them against ONE parcellation. Sweeping the threshold across jobs
+    # instead re-parcellates per grid point, and since parcellation is stochastic
+    # the network indices then mean different things at each threshold, making
+    # the comparison meaningless. Only sweep what should get its own parcellation.
+    if isinstance(knockout_thresh, (list, tuple)):
+        threshes = [float(t) for t in knockout_thresh]
+    else:
+        threshes = [float(knockout_thresh)]
+    _seen = set()
+    threshes = [t for t in threshes if not (t in _seen or _seen.add(t))]
+    assert threshes, 'knockout_thresh must specify at least one threshold'
+
     subnetwork_dir = os.path.join(output_dir, SUBNETWORK_NAME)
     knockout_root = os.path.join(output_dir, KNOCKOUT_NAME)
 
     if verbose:
-        stderr('Running knockout (modes=%s)\n' % ', '.join(modes))
+        stderr('Running knockout (modes=%s; thresholds=%s)\n' % (
+            ', '.join(modes), ', '.join('%g' % t for t in threshes)))
     indent += 2
 
     if not os.path.exists(knockout_root):
@@ -1287,41 +1308,46 @@ def run_knockout(
 
         net_indices = list(range(n_networks)) if networks is None else list(networks)
         for network_ix in net_indices:
-            # The selection (and its baselines) depend only on the parcellation
-            # and threshold, so they are computed once and reused across modes:
-            # every mode knocks out exactly the same neurons.
-            _, sel = select_knockout(coordinates, probs, knockout_thresh, network_ix=network_ix)
-            if int(sel.sum()) == 0:
-                if verbose:
-                    stderr('%sNetwork %d has no units above threshold; skipping\n' % (
-                        ' ' * indent, network_ix))
-                continue
-            for mode in modes:
-                mode_mean = mean_activations if mode == 'mean' else None
-                condition = 'network%d_%s' % (network_ix, _mode_label(mode, mean_domain))
-                # Real subnetwork knockout.
-                _run_knockout_condition(
-                    condition, knockout_root, model_name, coordinates, sel=sel,
-                    mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
-                    eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
-                    overwrite=overwrite, verbose=verbose, indent=indent
-                )
-                # Size-matched random baselines from the complement.
-                _run_baselines(
-                    condition, knockout_root, model_name, coordinates, sel,
-                    mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
-                    n_baseline=n_baseline, baseline_seed=baseline_seed,
-                    eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
-                    overwrite=overwrite, verbose=verbose, indent=indent
-                )
+            for thresh in threshes:
+                # The selection (and its baselines) depend only on the parcellation
+                # and threshold, so they are computed once and reused across modes:
+                # every mode knocks out exactly the same neurons.
+                _, sel = select_knockout(coordinates, probs, thresh, network_ix=network_ix)
+                if int(sel.sum()) == 0:
+                    if verbose:
+                        stderr('%sNetwork %d has no units above threshold %g; skipping\n' % (
+                            ' ' * indent, network_ix, thresh))
+                    continue
+                for mode in modes:
+                    mode_mean = mean_activations if mode == 'mean' else None
+                    condition = 'network%d_%s_%s' % (
+                        network_ix, thresh_token(thresh), _mode_label(mode, mean_domain))
+                    # Real subnetwork knockout.
+                    _run_knockout_condition(
+                        condition, knockout_root, model_name, coordinates, sel=sel,
+                        mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
+                        eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                        overwrite=overwrite, verbose=verbose, indent=indent
+                    )
+                    # Size-matched random baselines from the complement.
+                    _run_baselines(
+                        condition, knockout_root, model_name, coordinates, sel,
+                        mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
+                        n_baseline=n_baseline, baseline_seed=baseline_seed,
+                        eval_loss=eval_loss, loss_n_tokens=loss_n_tokens, steps=steps,
+                        overwrite=overwrite, verbose=verbose, indent=indent
+                    )
 
         # Union of all subnetworks (original behavior) + its baselines.
         if include_union and n_networks > 1:
-            _, sel = select_knockout(coordinates, probs, knockout_thresh, network_ix=None)
-            if int(sel.sum()) > 0:
+            for thresh in threshes:
+                _, sel = select_knockout(coordinates, probs, thresh, network_ix=None)
+                if int(sel.sum()) == 0:
+                    continue
                 for mode in modes:
                     mode_mean = mean_activations if mode == 'mean' else None
-                    condition = 'union_%s' % _mode_label(mode, mean_domain)
+                    condition = 'union_%s_%s' % (
+                        thresh_token(thresh), _mode_label(mode, mean_domain))
                     _run_knockout_condition(
                         condition, knockout_root, model_name, coordinates, sel=sel,
                         mean_activations=mode_mean, connectivity_kwargs=connectivity_kwargs,
@@ -1360,32 +1386,18 @@ def summarize_knockout_loss(knockout_root, verbose=True, indent=0):
         data = load_h5_data(loss_path, verbose=False)
         domains = sorted({k.rsplit('_', 1)[0] for k in data
                           if k.endswith('_loss')})
-        if name == HEALTHY_NAME:
-            kind = 'healthy'
-        elif BASELINE_NAME in name:
-            kind = 'baseline'
-        else:
-            kind = 'knockout'
-        # Parse the knockout mode ('mean'/'zero') and the network label out of the
-        # condition name (e.g. 'network0_mean', 'union_zero_baseline1'). Legacy
-        # single-mode conditions ('network0') carry no mode token -> mode = ''.
-        mode = ''
-        for _m in ('mean', 'zero'):
-            if ('_%s' % _m) in name or name == _m:
-                mode = _m
-                break
-        if name == HEALTHY_NAME:
-            network_label = HEALTHY_NAME
-        elif mode:
-            network_label = name.split('_%s' % mode)[0]
-        else:
-            network_label = name
+        # Kind, mode, network label and selection threshold all come out of the
+        # condition name (e.g. 'network0_thresh0.9_mean_baseline1'). The parser
+        # lives in plot.py so this summary and the stability summary cannot drift
+        # apart; legacy names without a threshold token yield thresh = NaN.
+        kind, mode, network_label, thresh = parse_condition_name(name)
         for domain in domains:
             rows.append(dict(
                 condition=name,
                 kind=kind,
                 mode=mode,
                 network=network_label,
+                thresh=thresh,
                 domain=domain,
                 loss=float(data['%s_loss' % domain]),
                 perplexity=float(data['%s_perplexity' % domain]),

@@ -10,6 +10,7 @@ LOSS_NAME = 'loss'
 MEAN_ACTIVATION_NAME = 'mean_activations'
 BASELINE_NAME = 'baseline'
 HEALTHY_NAME = 'healthy'
+THRESH_NAME = 'thresh'
 
 N_SAMPLES = 4
 N_TOKENS = 100000

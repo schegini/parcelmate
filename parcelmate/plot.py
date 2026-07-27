@@ -1,4 +1,5 @@
 import os
+import re
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -41,6 +42,18 @@ _CONDITION_SELECTOR = {
     'zero_rand': ('baseline', 'zero'),
 }
 
+# Condition directory names carry the selection threshold between the network and
+# the mode: ``network0_thresh0.9_mean`` (+ ``_baseline<s>``). The threshold is
+# part of a condition's identity because, like the mode, it is applied to an
+# already-fixed parcellation -- see the note in ``run_knockout``.
+_THRESH_RE = re.compile(r'^(.*)_%s([0-9]*\.?[0-9]+)$' % THRESH_NAME)
+
+
+def thresh_token(thresh):
+    """Condition-name token for a knockout threshold (0.9 -> ``'thresh0.9'``).
+    Inverse of the threshold half of :func:`parse_condition_name`."""
+    return '%s%g' % (THRESH_NAME, float(thresh))
+
 
 def _masked_corr(a, b):
     """Pearson correlation of two vectors after dropping any position that is NaN
@@ -67,18 +80,22 @@ def _tri_values(mat, k=-1):
     return mat[ix]
 
 
-def _parse_condition_name(name):
+def parse_condition_name(name):
     """Classify a knockout condition directory / summary label into
-    ``(kind, mode, network)``.
+    ``(kind, mode, network, thresh)``.
 
     ``kind``    -> 'healthy' | 'knockout' | 'baseline'
     ``mode``    -> 'mean' | 'zero' | '' (legacy single-mode runs)
-    ``network`` -> e.g. 'network0' (or 'healthy'/'union').
+    ``network`` -> e.g. 'network0' (or 'healthy'/'union')
+    ``thresh``  -> selection threshold as a float, or NaN for the healthy
+                   reference and for legacy names written before the threshold
+                   became part of the condition identity.
 
-    Mirrors the parsing in ``summarize_knockout_loss`` so the stability summary
-    lines up with the loss summary condition-for-condition."""
+    Single source of truth for condition-name parsing: both summaries
+    (``summarize_knockout_loss`` and ``summarize_knockout_stability``) go
+    through here, so they line up condition-for-condition."""
     if name == HEALTHY_NAME:
-        return 'healthy', '', HEALTHY_NAME
+        return 'healthy', '', HEALTHY_NAME, np.nan
     if BASELINE_NAME in name:
         kind = 'baseline'
     else:
@@ -93,7 +110,11 @@ def _parse_condition_name(name):
     else:
         # Legacy single-mode name; strip a trailing _baselineN if present.
         network = name.split('_%s' % BASELINE_NAME)[0]
-    return kind, mode, network
+    thresh = np.nan
+    match = _THRESH_RE.match(network)
+    if match:
+        network, thresh = match.group(1), float(match.group(2))
+    return kind, mode, network, thresh
 
 
 def plot_connectivity(
@@ -381,7 +402,7 @@ def summarize_knockout_stability(knockout_root, verbose=True, indent=0):
         stability = compute_stability(condition_dir, verbose=False, indent=indent)
         if stability is None:
             continue
-        kind, mode, network = _parse_condition_name(name)
+        kind, mode, network, thresh = parse_condition_name(name)
 
         scopes = {}
         if stability['between'] is not None:
@@ -397,6 +418,7 @@ def summarize_knockout_stability(knockout_root, verbose=True, indent=0):
                 kind=kind,
                 mode=mode,
                 network=network,
+                thresh=thresh,
                 scope=scope,
                 median_stability=float(np.median(finite)) if finite.size else np.nan,
                 n_pairs=int(finite.size),
@@ -482,17 +504,51 @@ def _available_conditions(df):
 
 
 def _prep_knockout_df(df):
-    """Normalize a loss summary for plotting: backfill legacy mode/network
+    """Normalize a loss summary for plotting: backfill legacy mode/network/thresh
     columns and drop the union condition (no longer analyzed)."""
     df = df.copy()
     if 'mode' not in df.columns:
         df['mode'] = ''
     if 'network' not in df.columns:
         df['network'] = df['condition']
+    if 'thresh' not in df.columns:
+        df['thresh'] = np.nan
     df['mode'] = df['mode'].fillna('').astype(str)
     df['network'] = df['network'].astype(str)
+    df['thresh'] = pd.to_numeric(df['thresh'], errors='coerce')
     df = df[df['network'] != 'union']
     return df
+
+
+def _available_threshes(df):
+    """Ordered selection thresholds present in a summary. The healthy reference
+    carries no threshold of its own (it is shared across all of them), so it is
+    excluded. Returns ``[nan]`` for a legacy summary written before the
+    threshold was recorded, which collapses the plots to their old single-row
+    layout."""
+    vals = sorted({float(t) for t in df.loc[df['kind'] != 'healthy', 'thresh']
+                   if pd.notna(t)})
+    return vals or [np.nan]
+
+
+def _thresh_slice(df, thresh):
+    """Rows belonging to one threshold, plus the healthy reference, which is the
+    shared baseline for every threshold row."""
+    healthy = df['kind'] == 'healthy'
+    if pd.isna(thresh):
+        return df[df['thresh'].isna() | healthy]
+    match = pd.Series(np.isclose(df['thresh'].to_numpy(dtype=float), thresh),
+                      index=df.index)
+    return df[match | healthy]
+
+
+def _row_ylabel(thresh, ylabel, n_threshes):
+    """Left-hand label for one threshold row. With a single threshold the figure
+    keeps its old one-row layout and the metric label; with several, the row
+    label carries the threshold instead (the metric is already in the suptitle)."""
+    if n_threshes > 1 and pd.notna(thresh):
+        return '%s %g' % (THRESH_NAME, thresh)
+    return ylabel
 
 
 def _network_sort_key(network):
@@ -514,7 +570,8 @@ def plot_knockout_loss(
     conditions (healthy / mean-out network / mean-out random / zero-out network /
     zero-out random). One figure per network per metric, faceted by domain so
     each domain keeps its own y-scale (perplexities differ by orders of magnitude
-    across corpora)."""
+    across corpora), with one row per selection threshold. Rows share a y-axis
+    within a column so the threshold comparison can be read straight down it."""
     knockout_root = os.path.join(output_dir, KNOCKOUT_NAME)
     summary_path = os.path.join(knockout_root, '%s_summary.csv' % LOSS_NAME)
     plot_dir = os.path.join(output_dir, PLOT_DIR, KNOCKOUT_NAME)
@@ -538,6 +595,7 @@ def plot_knockout_loss(
     networks = sorted({n for n in df['network'] if n.startswith('network')},
                       key=_network_sort_key)
     domains = sorted(df['domain'].unique())
+    threshes = _available_threshes(df)
 
     metrics = [('loss', 'loss', 'LM loss (cross-entropy)', False),
                ('perplexity', 'perplexity', 'perplexity', True)]
@@ -547,17 +605,20 @@ def plot_knockout_loss(
         for col, tag, ylabel, log_y in metrics:
             m_df = net_df.rename(columns={col: 'value'})
             fig, axes = plt.subplots(
-                1, len(domains),
-                figsize=(max(3.0 * len(domains), 4.5), 4.2),
+                len(threshes), len(domains),
+                figsize=(max(3.0 * len(domains), 4.5), 4.2 * len(threshes)),
+                sharey='col' if len(threshes) > 1 else 'none',
                 squeeze=False)
-            axes = axes[0]
-            for ax, domain in zip(axes, domains):
-                sub = m_df[m_df['domain'] == domain]
-                _draw_condition_bars(ax, sub, conditions)
-                if log_y:
-                    ax.set_yscale('log')
-                ax.set_title(domain, fontsize=10)
-            axes[0].set_ylabel(ylabel)
+            for r, thresh in enumerate(threshes):
+                t_df = _thresh_slice(m_df, thresh)
+                for ax, domain in zip(axes[r], domains):
+                    sub = t_df[t_df['domain'] == domain]
+                    _draw_condition_bars(ax, sub, conditions)
+                    if log_y:
+                        ax.set_yscale('log')
+                    if r == 0:
+                        ax.set_title(domain, fontsize=10)
+                axes[r][0].set_ylabel(_row_ylabel(thresh, ylabel, len(threshes)))
             _condition_legend(fig, conditions)
             fig.suptitle('Knockout %s: %s' % (ylabel, network), fontsize=11)
             fig.tight_layout(rect=(0, 0.06, 1, 0.96))
@@ -572,8 +633,8 @@ def plot_knockout_stability(
 ):
     """Per-network bar plots of distilled stability (median lower-triangle
     correlation) across the five knockout conditions. One figure per network,
-    faceted by scope (between-domain and each within-domain), mirroring the
-    loss/perplexity plots."""
+    faceted by scope (between-domain and each within-domain) with one row per
+    selection threshold, mirroring the loss/perplexity plots."""
     knockout_root = os.path.join(output_dir, KNOCKOUT_NAME)
     summary_path = os.path.join(knockout_root, '%s_summary.csv' % STABILITY_NAME)
     plot_dir = os.path.join(output_dir, PLOT_DIR, '%s_%s' % (STABILITY_NAME, KNOCKOUT_NAME))
@@ -599,20 +660,25 @@ def plot_knockout_stability(
     # Between-domain first, then within-domain scopes alphabetically.
     scopes = sorted(df['scope'].unique(),
                     key=lambda s: (0, s) if s == 'betweendomain' else (1, s))
+    threshes = _available_threshes(df)
+    ylabel = 'median stability (lower-triangle corr.)'
 
     for network in networks:
         net_df = df[(df['network'] == network) | (df['kind'] == 'healthy')]
         fig, axes = plt.subplots(
-            1, len(scopes),
-            figsize=(max(3.0 * len(scopes), 4.5), 4.2),
+            len(threshes), len(scopes),
+            figsize=(max(3.0 * len(scopes), 4.5), 4.2 * len(threshes)),
+            sharey='col' if len(threshes) > 1 else 'none',
             squeeze=False)
-        axes = axes[0]
-        for ax, scope in zip(axes, scopes):
-            sub = net_df[net_df['scope'] == scope]
-            _draw_condition_bars(ax, sub, conditions)
-            ax.axhline(0, color='#999999', linewidth=0.8, zorder=1)
-            ax.set_title(scope.replace('withindomain_', 'within: '), fontsize=9)
-        axes[0].set_ylabel('median stability (lower-triangle corr.)')
+        for r, thresh in enumerate(threshes):
+            t_df = _thresh_slice(net_df, thresh)
+            for ax, scope in zip(axes[r], scopes):
+                sub = t_df[t_df['scope'] == scope]
+                _draw_condition_bars(ax, sub, conditions)
+                ax.axhline(0, color='#999999', linewidth=0.8, zorder=1)
+                if r == 0:
+                    ax.set_title(scope.replace('withindomain_', 'within: '), fontsize=9)
+            axes[r][0].set_ylabel(_row_ylabel(thresh, ylabel, len(threshes)))
         _condition_legend(fig, conditions)
         fig.suptitle('Knockout stability: %s' % network, fontsize=11)
         fig.tight_layout(rect=(0, 0.06, 1, 0.96))

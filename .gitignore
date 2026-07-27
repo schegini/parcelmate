@@ -16,6 +16,15 @@ results_knockout_test/
 # Ignore macOS directory metadata
 .DS_Store
 
+# Stray SLURM job logs written to the repo root. Root-anchored so the run logs
+# tracked under parcelmate/c_outputs/*/sweep/logs/ are unaffected.
+/*.out
+
+# Local copies of cluster results pulled down for inspection. Root-anchored so
+# the curated outputs under parcelmate/c_outputs/sweeps/ stay tracked.
+/sweeps/
+/results-bundle.tgz
+
 # Generated plots. These are regenerable from the h5 outputs on scratch, and
 # the connectivity heatmaps alone run to ~1GB. The knockout bar plots are the
 # figures we actually share, so they stay tracked; force-add anything else

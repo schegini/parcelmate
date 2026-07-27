@@ -23,7 +23,7 @@ knockout:
   n_baseline: 1
   baseline_seed: 0
   networks: [0, 1]          # just two subnetworks for the smoke test
-  include_union: true
+  include_union: false      # union no longer analyzed; per-network only
   include_healthy: true
   eval_loss: true
   loss_n_tokens: 5000

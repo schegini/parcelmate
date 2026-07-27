@@ -24,6 +24,7 @@ results_knockout_test/
 # the curated outputs under parcelmate/c_outputs/sweeps/ stay tracked.
 /sweeps/
 /results-bundle.tgz
+/sweep_nnetworks/
 
 # Generated plots. These are regenerable from the h5 outputs on scratch, and
 # the connectivity heatmaps alone run to ~1GB. The knockout bar plots are the

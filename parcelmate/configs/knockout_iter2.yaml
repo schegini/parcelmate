@@ -11,7 +11,11 @@ connectivity:
   seq_len: 512
   n_samples: 2
   n_tokens: 50000
-  batch_size: 8
+  # 4, not 8: the lm_head logits are batch x seq_len x 50257 floats (~786 MiB at
+  # batch 8), the largest allocation in the pass and the one that OOMs when the
+  # GPU is shared with another job. Only changes how the token budget is chunked
+  # -- n_tokens is set explicitly below, so the data seen is identical.
+  batch_size: 4
 
 parcellation:
   n_networks: 50

@@ -24,3 +24,12 @@ parcellation:
   connectivity_pca_components: 200
 
 subnetwork_extraction: {}
+
+knockout:
+  # Both modes run against the SAME parcellation and the same per-network unit
+  # selection, so the only thing that differs between them is what the lesioned
+  # units are clamped to -- zero, or their mean activation.
+  knockout_mode: [zero, mean]
+  knockout_thresh: 0.5
+  networks: null          # null = every shared subnetwork, each on its own
+  steps: [plot_stability]

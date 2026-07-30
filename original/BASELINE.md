@@ -5,109 +5,134 @@ fork's note about what this directory is and how to use it.
 
 ## What this is
 
-A verbatim copy of **`coryshain/parcelmate` at commit `39bfe13`** — the point this
-fork diverged (`git merge-base HEAD upstream/main`). Upstream has not moved since,
-so this is also its current `main`.
+A copy of **`coryshain/parcelmate` at commit `39bfe13`** — the point this fork
+diverged (`git merge-base HEAD upstream/main`). Upstream has not moved since, so
+this is also its current `main`.
 
 It exists to answer one question: **are the fork's results a property of the
 method, or of the fork's changes to the code?**
 
-## What was changed, and why
+It is deliberately *not* a copy of the fork. It carries the original's pipeline
+plus three specific additions (below) and nothing else — no size-matched random
+baselines, no LM-loss evaluation, no threshold sweep.
 
-Two patches, both required to make 2025-era code run against today's libraries.
-Each is marked in-place with a `BASELINE PATCH` comment.
+## Compatibility patches
 
-**Patch 1 — `parcelmate/model.py`, HuggingFace dataset ids (3 lines).**
+Three changes were needed to make 2025-era code run correctly against today's
+libraries. Each is marked in-place with a `BASELINE PATCH` comment.
+
+**Patch 1 — `model.py`, HuggingFace dataset ids (3 lines).**
 `dataset='wikitext'` → `'Salesforce/wikitext'`, `'bookcorpus'` →
 `'bookcorpus/bookcorpus'`, and `_data_kwargs['trust_remote_code'] = True` removed.
-Bare dataset ids no longer resolve and `trust_remote_code` was removed in
-`datasets>=3.0`, so **without this the original cannot load wikitext at all**.
-This is the same fix the fork made in `aca114a`.
+Bare ids no longer resolve and `trust_remote_code` was removed in `datasets>=3.0`,
+so **without this the original cannot load wikitext at all**. Same fix as the
+fork's `aca114a`.
 
-**Patch 2 — `parcelmate/data.py`, CPU fallback in `correlate` (1 line).**
+**Patch 2 — `data.py`, CPU fallback in `correlate` (1 line).**
 `use_gpu = use_gpu and torch.cuda.is_available()`. The original unconditionally
-calls `torch.cuda.get_device_properties(0)`, which crashes on a machine without
-CUDA. A no-op on a GPU node — it only unblocks running the smoke config locally.
+calls `torch.cuda.get_device_properties(0)`, which crashes without CUDA. A no-op
+on a GPU node.
 
-Neither patch touches the connectivity, parcellation, or subnetwork maths. To
-confirm that for yourself:
+**Patch 3 — `model.py`, `PerturbedLayer.forward` (1 line). This one changes
+results.** Was `self.layer.forward(*args, **kwargs)`, now `self.layer(...)`.
+Calling `.forward()` directly bypasses PyTorch's forward hooks, and
+**transformers v5 collects `output_hidden_states` via those hooks**. So every
+wrapped block silently dropped its own hidden state:
+
+| lesioned layers | hidden states returned (of 13) |
+|---|---|
+| embedding only | 13 |
+| one block | 12 |
+| all 12 blocks | **1** |
+
+A knockout spanning the whole model therefore produced connectivity over **768
+units instead of 9984** — the embedding layer alone — while the healthy run used
+all 9984. Measured on transformers 5.12.1, which is what `uv.lock` pins.
+
+The lesion itself always applied correctly; only the *recording* of activations
+was lost. So loss-based results are unaffected, but any connectivity or stability
+computed **after** a knockout was measuring a fraction of the model.
+
+## The three additions
+
+Marked in-place with `ADDED (n)` comments.
+
+**(1) Mean vectors for mean-out.** `compute_mean_activations` collects each
+neuron's mean activation and caches it to `mean_activations.h5`. Zero-out sets a
+lesioned neuron to 0, which is off-distribution — no neuron rests at 0, so part of
+the damage is the shock of an impossible value rather than the loss of the
+network. Mean-out clamps to a mean instead, so the neuron goes uninformative while
+staying in range. Both the cross-domain aggregate (token-weighted, the default
+clamp) and each per-corpus mean vector are stored, so a network can also be
+clamped to one corpus's mean.
+
+**(2) No union.** The original OR-ed every column of the shared parcellation
+together and lesioned the union of all subnetworks in one pass, so nothing could
+be attributed to any single network. `select_knockout` now requires a
+`network_ix` and **refuses** a multi-network selection; `run_knockout` loops over
+networks, writing `knockout/network<i>_<mode>/`. Both modes run against the same
+parcellation and the same per-network unit selection, so mean-out and zero-out
+lesion identical units and are directly comparable.
+
+**(3) Distilled stability.** `summarize_knockout_stability` reduces each
+condition's stability matrix to one number — the median of its strict lower
+triangle — and writes `knockout/stability_summary.csv` with `condition, network,
+mode, scope, median_stability, n_pairs`. Lower triangle because the matrix is
+symmetric with a trivial unit diagonal; median because one degenerate pair
+shouldn't drag the summary the way a mean would. Scopes are `betweendomain` and
+`withindomain_<domain>`.
+
+Two things this had to get right:
+
+- **Lesioned units are excluded explicitly**, via a per-condition
+  `knockout_selection.h5`, not by filtering NaN. A lesioned unit is constant so
+  its connectivity *should* be undefined, but `correlate` mean-centres in
+  float32: clamping to a large non-zero mean leaves rounding residue, the norm
+  isn't exactly 0, and the unit yields **noise correlations instead of NaN**. In a
+  test run only 196 of 736 lesioned units went NaN under mean-out versus 612 of
+  736 under zero-out. Filtering NaN alone would drop different unit counts per
+  mode and bias the mean-vs-zero comparison. Both modes now drop the identical
+  set.
+- `plot_stability` is **untouched**, still zero-filling NaN as upstream wrote it.
+  It and this summary can therefore disagree on knocked-out conditions; the
+  summary is the one to trust after a lesion.
+
+`n_pairs` is worth watching: with `n_samples: 2` the within-domain median is taken
+over a single sample pair, so it is that pair, not a median. Raise
+`connectivity.n_samples` if you want the within-domain numbers to mean much.
+
+## Verifying what changed
 
 ```bash
-# from the repo root -- shows ONLY the two patches above
+# from the repo root
 diff <(git show upstream/main:parcelmate/model.py) original/parcelmate/model.py
+diff <(git show upstream/main:parcelmate/plot.py)  original/parcelmate/plot.py
 diff <(git show upstream/main:parcelmate/data.py)  original/parcelmate/data.py
-```
 
-Everything else here is scaffolding that does not exist upstream and so cannot
-change its behaviour: `pyproject.toml` + `uv.lock` (copied from the fork, so both
-sides resolve **identical** dependency versions — otherwise you would be comparing
-library versions as much as code), `configs/`, `jobs/`, and this file.
-
-## Comparing the two codebases
-
-```bash
-# Side-by-side of the whole package. The fork is ~1400 lines ahead, mostly
-# knockout machinery in model.py/plot.py that has no upstream counterpart.
+# the fork vs this baseline
 diff -ru original/parcelmate parcelmate
-
-# Just the shared pipeline, ignoring the fork's additions:
-diff -u original/parcelmate/data.py parcelmate/data.py
-diff -u original/parcelmate/util.py parcelmate/util.py
-git diff upstream/main HEAD --stat -- parcelmate/
 ```
 
-Known fork-side changes to the **shared** code path (as opposed to net-new
-knockout code), i.e. the candidates for any results difference:
-
-| File | Change | Numerically relevant? |
-|---|---|---|
-| `data.py` | CPU fallback in `correlate` | No — same maths, different device |
-| `util.py` | `f[key][:]` → `f[key][()]` in `load_h5_data` | No — read-side only, handles scalar datasets |
-| `constants.py` | raw-string regex, extra name constants | No — silences a `SyntaxWarning` |
-| `model.py` | dataset ids / `trust_remote_code` | No — same corpora, current ids |
-| `model.py`, `plot.py` | knockout + stability additions | Net-new; not on the shared path |
-
-That table is the prediction: **the shared pipeline should produce equivalent
-results, and the run below is what tests it.** Parcellation is stochastic, so
-"equivalent" means the stability/score distributions line up, not that network
-indices match.
+Scaffolding that does not exist upstream and so cannot change its behaviour:
+`pyproject.toml` + `uv.lock` (copied from the fork so both sides resolve
+**identical** dependency versions — otherwise you would be comparing library
+versions as much as code), `configs/`, `jobs/`, and this file.
 
 ## Running it
 
 The one rule: **run from inside this directory.** `python -m parcelmate.bin.main`
 resolves the package from the current working directory first, so running from the
 repo root would silently execute the *fork's* code. The cluster job asserts this;
-when running by hand, check it:
+by hand, check with:
 
 ```bash
 cd original
 python -c "import parcelmate, os; print(os.path.abspath(parcelmate.__file__))"
 ```
 
-**Local smoke test** (CPU, ~1 min, numbers meaningless — just proves it runs).
-Verified passing on 2026-07-30: connectivity for both domains → parcellation →
-`subnetwork/parcellation_shared_avg.h5`.
-
-```bash
-cd original
-../.venv/bin/python -m parcelmate.bin.main configs/smoke.yaml \
-    -s connectivity parcellation subnetwork_extraction
-```
-
-Reusing the fork's `.venv` is just the fast path — it is built from the same
-`pyproject.toml`/`uv.lock` copied here. For a genuinely isolated environment use
-`uv run python -m ...` instead, which syncs a separate venv from this directory's
-own copies.
-
-Both domains in `configs/smoke.yaml` are synthetic and generated locally, so the
-smoke test needs no dataset downloads (only the gpt2 weights, likely already
-cached). Note it uses **two** domains deliberately: `subnetwork_extraction`
-indexes `domains[0]`/`domains[1]`, so any single-domain config dies with a
-`KeyError`. That is true of the fork too — the fork's own `bare.yaml` would hit
-it — so it is shared behaviour, not a difference between the codebases.
-
-**Matched cluster run** — `configs/match_iter2.yaml` copies every setting from the
-fork's `parcelmate/configs/knockout_iter2.yaml`, so the code is the only variable:
+`configs/match_iter2.yaml` copies every connectivity and parcellation setting from
+the fork's `parcelmate/configs/knockout_iter2.yaml`, so the code is the only
+variable:
 
 ```bash
 ssh <CSID>@sc.stanford.edu
@@ -120,22 +145,19 @@ Outputs land in `/nlp/scr/schegini/parcelmate/original/match_iter2`, a separate
 tree from every fork run — both pipelines resume from whatever h5s they find on
 disk, so a shared `output_dir` would silently blend the two codebases' outputs.
 
-The job runs `connectivity → parcellation → subnetwork_extraction` plus plots. It
-does **not** run upstream's `subnetwork_knockout`: that is upstream's own earlier
-knockout implementation, not the fork's selectivity analysis, so it is not a
-like-for-like comparison and it is not free.
+**Cost.** The knockout re-runs connectivity once per condition, and conditions
+multiply as `networks x modes`. With `networks: null` (every shared subnetwork)
+and both modes that can be a lot of passes; set `networks: [0, 1, 2]` while
+iterating.
 
 ## What to compare afterwards
 
-The two runs share the same output layout, so compare the same files across the
-two `output_dir`s:
+Both runs share the same output layout, so compare the same files across the two
+`output_dir`s:
 
-- `connectivity/connectivity_<domain>_avg.h5` — do the connectivity matrices agree?
-  This is the most direct test; it is deterministic given the same data, so large
-  differences here mean a real code divergence rather than sampling noise.
-- `parcellation/` sample scores and the stability plots — parcellation is
-  stochastic, so compare distributions, not per-index identity.
-- `plots/` — the heatmaps are the fastest eyeball check.
-
-If the connectivity matrices agree and the stability distributions overlap, the
-fork's results are the method's, not the fork's edits.
+- `connectivity/connectivity_<domain>_avg.h5` — the most direct test, and
+  deterministic given the same data, so large differences mean a real code
+  divergence rather than sampling noise.
+- `parcellation/` sample scores — stochastic, so compare distributions, not
+  per-index identity.
+- `knockout/stability_summary.csv` — the distilled scalar, per network and mode.

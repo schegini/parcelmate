@@ -89,7 +89,14 @@ class PerturbedLayer(torch.nn.Module):
         self.perturbation_values = perturbation_values
 
     def forward(self, *args, **kwargs):
-        out = self.layer.forward(*args, **kwargs)
+        # BASELINE PATCH 3: was `self.layer.forward(*args, **kwargs)`. Calling
+        # .forward() directly bypasses PyTorch's forward hooks, and transformers
+        # v5 collects `output_hidden_states` VIA those hooks. So every wrapped
+        # block silently dropped its hidden state: lesioning all 12 GPT-2 blocks
+        # returned 1 hidden state instead of 13, and connectivity was computed
+        # over 768 units instead of 9984. The lesion itself always applied
+        # correctly -- only the recording of activations was lost.
+        out = self.layer(*args, **kwargs)
         if self.perturbation_coordinates is not None:
             if isinstance(out, torch.Tensor):
                 out[..., self.perturbation_coordinates] = self.perturbation_values
@@ -101,19 +108,30 @@ class PerturbedLayer(torch.nn.Module):
         return out
 
 
-def get_model_and_tokenizer(model_name, knockout_probs=None, knockout_thresh=0.5, coordinates=None):
+def get_model_and_tokenizer(
+        model_name,
+        knockout_probs=None,
+        knockout_thresh=0.5,
+        coordinates=None,
+        network_ix=None,      # ADDED (2): which single network to lesion
+        knockout_values=None  # ADDED (1): mean-out clamp values, <n_units>
+):
     model = AutoModel.from_pretrained(model_name)
     if knockout_probs is not None:
         assert coordinates is not None, 'coordinates must be provided if knockout_probs is not None'
-        sel = None
-        for ix in range(knockout_probs.shape[1]):
-            inv_mask_ = knockout_probs[:, ix] >= knockout_thresh
-            if sel is None:
-                sel = inv_mask_
-            else:
-                sel |= inv_mask_
-        perturbation_coordinates = coordinates[sel]
+        perturbation_coordinates, sel = select_knockout(
+            coordinates, knockout_probs, knockout_thresh=knockout_thresh, network_ix=network_ix
+        )
+        # None -> PerturbedModel defaults to zeros, i.e. zero-out. Otherwise take
+        # the clamp value of each selected unit from the full-length mean vector,
+        # which is aligned row-for-row with `coordinates`.
         perturbation_values = None
+        if knockout_values is not None:
+            knockout_values = np.asarray(knockout_values)
+            assert knockout_values.shape[0] == sel.shape[0], \
+                'knockout_values must be aligned with coordinates (%d vs %d)' % (
+                    knockout_values.shape[0], sel.shape[0])
+            perturbation_values = knockout_values[sel]
         model = PerturbedModel(
             model,
             perturbation_coordinates=perturbation_coordinates,
@@ -407,6 +425,212 @@ def align_samples(
     return parcellation
 
 
+def resolve_domain_data_kwargs(domain, tokenizer, data_kwargs=None):
+    """Map a domain name onto the `get_dataset` kwargs that load it.
+
+    ADDED: lifted verbatim out of `run_connectivity` (no behavioural change) so
+    that mean-activation collection can draw from the same corpora by the same
+    rules. Single source of truth for what a domain name means.
+    """
+    if data_kwargs is None:
+        data_kwargs = {}
+    _data_kwargs = copy.deepcopy(data_kwargs)
+    if domain == 'wikitext':
+        _data_kwargs.update(dict(
+            dataset='Salesforce/wikitext',  # BASELINE PATCH 1 (was 'wikitext')
+            name='wikitext-103-raw-v1',
+        ))
+    elif domain == 'bookcorpus':
+        _data_kwargs.update(dict(
+            dataset='bookcorpus/bookcorpus'  # BASELINE PATCH 1 (was 'bookcorpus')
+        ))
+    elif domain == 'agnews':
+        _data_kwargs.update(dict(
+            dataset='fancyzhx/ag_news'
+        ))
+    elif domain == 'codeparrot':
+        _data_kwargs.update(dict(
+            dataset='codeparrot/codeparrot-clean'
+        ))
+    elif domain == 'tldr17':
+        _data_kwargs.update(dict(
+            dataset='webis/tldr-17'
+        ))
+    elif domain == 'random':
+        _data_kwargs.update(dict(
+            dataset='random'
+        ))
+    elif domain == 'whitespace':
+        _data_kwargs.update(dict(
+            dataset='whitespace'
+        ))
+    else:
+        raise ValueError('Unrecognized input data name: %s' % domain)
+    # BASELINE PATCH 1: `trust_remote_code` was removed in datasets>=3.0 and
+    # now raises. Original line: _data_kwargs['trust_remote_code'] = True
+    _data_kwargs['tokenizer'] = tokenizer
+
+    return _data_kwargs
+
+
+def compute_mean_activations(
+        model_name='gpt2',
+        output_dir=OUTPUT_DIR,
+        domains=('wikitext', 'bookcorpus', 'agnews', 'tldr17', 'codeparrot', 'random', 'whitespace'),
+        seq_len=1024,
+        n_tokens=None,
+        split='train',
+        take=100000,
+        wrap=True,
+        shuffle=True,
+        batch_size=8,
+        data_kwargs=None,
+        model_kwargs=None,
+        overwrite=False,
+        verbose=True,
+        indent=0
+):
+    """ADDED (1): collect each neuron's mean activation, to be used as the
+    "mean-out" clamp value.
+
+    Zero-out sets a knocked-out neuron to 0, which is off-distribution: no
+    neuron's resting state is 0, so part of the damage is the shock of an
+    impossible value rather than the loss of the network. Mean-out clamps to a
+    mean activation instead, so the neuron goes uninformative while staying in
+    its normal range.
+
+    Returns ``(mean_activations, domain_means, coordinates)``:
+    ``mean_activations`` is the token-weighted mean over ALL domains (<n_units>),
+    the default clamp; ``domain_means`` maps each domain to its own mean vector
+    (<n_units>), so a network can instead be clamped to one corpus's mean; and
+    ``coordinates`` is aligned row-for-row with both, exactly as
+    `get_timecourses` returns them.
+
+    Cached to ``mean_activations.h5`` under ``output_dir`` -- this is a full
+    forward pass over every domain, so it is computed once per run and reused by
+    every mean-out condition.
+    """
+    if model_kwargs is None:
+        model_kwargs = {}
+    if n_tokens is None:
+        n_tokens = (N_TOKENS // (seq_len * batch_size)) * seq_len * batch_size
+
+    if isinstance(domains, str):
+        domains = (domains,)
+
+    filepath = os.path.join(output_dir, '%s%s' % (MEAN_ACTIVATION_NAME, EXTENSION))
+    if os.path.exists(filepath) and not overwrite:
+        data = load_h5_data(filepath, verbose=verbose, indent=indent)
+        cached = unpack_mean_activations(data)
+        # Only reuse a cache that covers every domain asked for.
+        if cached is not None and all(d in cached[1] for d in domains):
+            return cached
+
+    if verbose:
+        stderr('%sComputing mean activations for mean-out\n' % (' ' * indent))
+    indent += 2
+
+    model, tokenizer = get_model_and_tokenizer(model_name)
+
+    domain_means = {}
+    running_sum = None
+    running_count = 0
+    coordinates = None
+    for domain in domains:
+        if verbose:
+            stderr('%sDomain %s\n' % (' ' * indent, domain))
+        _data_kwargs = resolve_domain_data_kwargs(domain, tokenizer, data_kwargs)
+        input_ids, attention_mask = get_dataset(
+            n_tokens=n_tokens,
+            split=split,
+            take=take,
+            seq_len=seq_len,
+            wrap=wrap,
+            shuffle=shuffle,
+            verbose=verbose,
+            indent=indent + 2,
+            **_data_kwargs
+        )
+        # Raw activations: no bandpass, no PCA/ICA. The clamp value has to be on
+        # the same scale as what the layer actually emits at inference.
+        out = get_timecourses(
+            model,
+            input_ids,
+            attention_mask,
+            batch_size=batch_size,
+            highpass=None,
+            lowpass=None,
+            verbose=verbose,
+            indent=indent + 2,
+            **model_kwargs
+        )
+        timecourses = out['timecourses']  # <n_units, n_tokens>
+        coordinates = out['coordinates']
+        domain_sum = timecourses.sum(axis=1).astype(np.float64)
+        domain_count = timecourses.shape[1]
+        domain_means[domain] = (domain_sum / max(domain_count, 1)).astype(np.float32)
+        # Token-weighted, so the aggregate mixes domains in proportion to how
+        # much text each contributed rather than treating a tiny domain as equal.
+        if running_sum is None:
+            running_sum = domain_sum.copy()
+        else:
+            running_sum += domain_sum
+        running_count += domain_count
+
+    mean_activations = (running_sum / max(running_count, 1)).astype(np.float32)
+
+    # `domains` is stored alongside so the stacked per-corpus means can be
+    # unpacked back into a dict; h5 has no dict type.
+    domain_names = list(domain_means)
+    save_h5_data(
+        dict(
+            mean_activations=mean_activations,
+            domain_means=np.stack([domain_means[d] for d in domain_names], axis=0),
+            domains=np.array([d.encode('utf-8') for d in domain_names]),
+            coordinates=coordinates
+        ),
+        filepath,
+        verbose=verbose,
+        indent=indent
+    )
+
+    return mean_activations, domain_means, coordinates
+
+
+def unpack_mean_activations(data):
+    """ADDED (1): rebuild ``(mean_activations, domain_means, coordinates)`` from a
+    loaded ``mean_activations.h5``, or None if the payload is incomplete."""
+    required = ('mean_activations', 'domain_means', 'domains', 'coordinates')
+    if not all(k in data for k in required):
+        return None
+    names = [d.decode('utf-8') if isinstance(d, bytes) else str(d)
+             for d in data['domains']]
+    domain_means = {name: np.asarray(row)
+                    for name, row in zip(names, np.asarray(data['domain_means']))}
+    return data['mean_activations'], domain_means, data['coordinates']
+
+
+def select_knockout(coordinates, knockout_probs, knockout_thresh=0.5, network_ix=None):
+    """ADDED (2): build the boolean unit mask for knocking out ONE network.
+
+    `knockout_probs` is <n_units, n_networks> soft membership. The original code
+    OR-ed every column together and lesioned the union of all shared subnetworks
+    in a single pass, which cannot attribute damage to any particular network --
+    so `network_ix` is required here whenever more than one network is present.
+
+    Returns ``(perturbation_coordinates, sel)``.
+    """
+    probs = np.asarray(knockout_probs)
+    if probs.ndim == 1:
+        sel = probs >= knockout_thresh
+    else:
+        assert network_ix is not None or probs.shape[1] == 1, \
+            'network_ix is required: refusing to knock out the union of %d networks ' \
+            'at once (damage could not be attributed to any one of them)' % probs.shape[1]
+        sel = probs[:, network_ix or 0] >= knockout_thresh
+    return coordinates[sel], sel
+
+
 def run_connectivity(
         model_name='gpt2',
         output_dir=OUTPUT_DIR,
@@ -429,6 +653,8 @@ def run_connectivity(
         model_kwargs=None,
         knockout_filepath=None,
         knockout_thresh=0.5,
+        knockout_network_ix=None,  # ADDED (2): lesion one network, not the union
+        knockout_values=None,      # ADDED (1): mean-out clamp values, <n_units>
         overwrite=False,
         verbose=True,
         indent=0
@@ -453,7 +679,9 @@ def run_connectivity(
         model_name,
         knockout_probs=knockout_probs,
         coordinates=knockout_coordinates,
-        knockout_thresh=knockout_thresh
+        knockout_thresh=knockout_thresh,
+        network_ix=knockout_network_ix,
+        knockout_values=knockout_values
     )
 
     if isinstance(domains, str):
@@ -463,42 +691,7 @@ def run_connectivity(
         if verbose:
             stderr('%sRunning connectivity for %s\n' % (' ' * indent, domain))
         indent += 2
-        _data_kwargs = copy.deepcopy(data_kwargs)
-        if domain == 'wikitext':
-            _data_kwargs.update(dict(
-                dataset='Salesforce/wikitext',  # BASELINE PATCH 1 (was 'wikitext')
-                tokenizer= tokenizer,
-                name='wikitext-103-raw-v1',
-            ))
-        elif domain == 'bookcorpus':
-            _data_kwargs.update(dict(
-                dataset='bookcorpus/bookcorpus'  # BASELINE PATCH 1 (was 'bookcorpus')
-            ))
-        elif domain == 'agnews':
-            _data_kwargs.update(dict(
-                dataset='fancyzhx/ag_news'
-            ))
-        elif domain == 'codeparrot':
-            _data_kwargs.update(dict(
-                dataset='codeparrot/codeparrot-clean'
-            ))
-        elif domain == 'tldr17':
-            _data_kwargs.update(dict(
-                dataset='webis/tldr-17'
-            ))
-        elif domain == 'random':
-            _data_kwargs.update(dict(
-                dataset='random'
-            ))
-        elif domain == 'whitespace':
-            _data_kwargs.update(dict(
-                dataset='whitespace'
-            ))
-        else:
-            raise ValueError('Unrecognized input data name: %s' % domain)
-        # BASELINE PATCH 1: `trust_remote_code` was removed in datasets>=3.0 and
-        # now raises. Original line: _data_kwargs['trust_remote_code'] = True
-        _data_kwargs['tokenizer'] = tokenizer
+        _data_kwargs = resolve_domain_data_kwargs(domain, tokenizer, data_kwargs)
 
         input_ids, attention_mask = get_dataset(
             n_tokens=n_tokens * n_samples,
@@ -780,14 +973,44 @@ def run_knockout(
         output_dir=os.path.join(OUTPUT_DIR, KNOCKOUT_NAME),
         model_name='gpt2',
         connectivity_kwargs=None,
+        knockout_mode=('zero', 'mean'),  # ADDED (1): 'mean' = mean-out
+        knockout_thresh=0.5,
+        networks=None,                   # ADDED (2): which networks; None = each
         steps=('plot_stability',),
+        overwrite=False,
         verbose=True,
         indent=0
 ):
+    """Knock out each shared subnetwork INDIVIDUALLY, under each perturbation mode.
+
+    Changed from the original in two ways:
+
+    (2) The original lesioned the *union* of every shared subnetwork in one pass
+        (`get_model_and_tokenizer` OR-ed all columns of the parcellation), so a
+        change in connectivity could not be attributed to any one network. Each
+        network is now knocked out on its own, into its own output directory.
+
+    (1) `knockout_mode` selects what the lesioned units are clamped to: 'zero'
+        (the original behaviour) or 'mean' (mean-out, using the mean activations
+        collected by `compute_mean_activations`). Both modes are driven from the
+        SAME parcellation and the same per-network selection, so mean-out and
+        zero-out lesion identical units and are directly comparable.
+
+    Conditions are written to ``<output_dir>/knockout/network<i>_<mode>/``.
+    """
     if connectivity_kwargs is None:
         connectivity_kwargs = {}
+    # `model_name` is also a legitimate connectivity key; take it from there when
+    # present, otherwise Python raises on the duplicate keyword below.
+    connectivity_kwargs = dict(connectivity_kwargs)
+    model_name = connectivity_kwargs.pop('model_name', model_name)
+    if isinstance(knockout_mode, str):
+        knockout_mode = (knockout_mode,)
+    for mode in knockout_mode:
+        assert mode in ('zero', 'mean'), 'Unrecognized knockout_mode: %s' % mode
+
     subnetwork_dir = os.path.join(output_dir, SUBNETWORK_NAME)
-    knockout_dir = os.path.join(output_dir, 'knockout')
+    knockout_dir = os.path.join(output_dir, KNOCKOUT_NAME)
 
     if verbose:
         stderr('Running knockout\n')
@@ -796,7 +1019,22 @@ def run_knockout(
     if not os.path.exists(knockout_dir):
         os.makedirs(knockout_dir)
 
-    for path in os.listdir(subnetwork_dir):
+    # Mean-out clamp values. Computed once (a full pass over every domain) and
+    # shared by every mean-out condition; skipped entirely if only zeroing out.
+    mean_activations = None
+    if 'mean' in knockout_mode:
+        mean_activations, _, mean_coordinates = compute_mean_activations(
+            model_name=model_name,
+            output_dir=output_dir,
+            overwrite=overwrite,
+            verbose=verbose,
+            indent=indent,
+            **{k: v for k, v in connectivity_kwargs.items()
+               if k in ('domains', 'seq_len', 'n_tokens', 'split', 'take', 'wrap',
+                        'shuffle', 'batch_size', 'data_kwargs', 'model_kwargs')}
+        )
+
+    for path in sorted(os.listdir(subnetwork_dir)):
         match = INPUT_NAME_RE.match(path)
         if not match:
             continue
@@ -805,22 +1043,78 @@ def run_knockout(
         if 'parcellation' not in data:
             continue
 
-        run_connectivity(
-            model_name=model_name,
-            output_dir=knockout_dir,
-            knockout_filepath=knockout_filepath,
-            knockout_thresh=0.5,
-            verbose=verbose,
-            indent=indent,
-            **connectivity_kwargs
-        )
+        parcellation = np.asarray(data['parcellation'])
+        if parcellation.ndim == 1:
+            parcellation = parcellation[:, None]
+        n_networks = parcellation.shape[1]
+        network_ixs = range(n_networks) if networks is None else networks
 
-        for step in steps:
-            if step == 'plot_stability':
-                plot_stability(
-                    output_dir=knockout_dir,
+        if mean_activations is not None:
+            # The clamp vector is indexed by the same unit ordering as the
+            # parcellation; if that ever drifts, mean-out would clamp the wrong
+            # neurons to plausible-looking values and fail silently.
+            assert np.array_equal(np.asarray(mean_coordinates), np.asarray(data['coordinates'])), \
+                'Mean-activation coordinates do not match the parcellation coordinates'
+
+        for network_ix in network_ixs:
+            assert 0 <= network_ix < n_networks, \
+                'Network %d out of range (%d networks found)' % (network_ix, n_networks)
+            n_units = int((parcellation[:, network_ix] >= knockout_thresh).sum())
+            if not n_units:
+                if verbose:
+                    stderr('%sSkipping network%d: no units at/above thresh %s\n' % (
+                        ' ' * indent, network_ix, knockout_thresh))
+                continue
+
+            for mode in knockout_mode:
+                condition = 'network%d_%s' % (network_ix, mode)
+                condition_dir = os.path.join(knockout_dir, condition)
+                if verbose:
+                    stderr('%sCondition %s (%d units)\n' % (' ' * indent, condition, n_units))
+
+                run_connectivity(
+                    model_name=model_name,
+                    output_dir=condition_dir,
+                    knockout_filepath=knockout_filepath,
+                    knockout_thresh=knockout_thresh,
+                    knockout_network_ix=network_ix,
+                    knockout_values=mean_activations if mode == 'mean' else None,
+                    overwrite=overwrite,
                     verbose=verbose,
-                    indent=indent
+                    indent=indent + 2,
+                    **connectivity_kwargs
                 )
-            else:
-                raise ValueError('Unrecognized step: %s' % step)
+
+                # ADDED (3): record exactly which units were lesioned, so the
+                # stability summary can exclude them explicitly.
+                #
+                # Relying on NaN to exclude them is not enough. A lesioned unit is
+                # constant, so its connectivity SHOULD be undefined -- but
+                # `correlate` mean-centres in float32, and clamping to a large
+                # non-zero mean leaves rounding residue, so the norm is not
+                # exactly 0 and the unit yields noise correlations instead of NaN.
+                # Zero-out clamps to exactly 0.0 and NaNs much more reliably. That
+                # asymmetry would silently drop more units under zero-out than
+                # under mean-out and bias the very comparison this is here to make.
+                _, sel = select_knockout(
+                    data['coordinates'], parcellation,
+                    knockout_thresh=knockout_thresh, network_ix=network_ix
+                )
+                save_h5_data(
+                    dict(selection=sel.astype(np.uint8)),
+                    os.path.join(condition_dir, '%s_selection%s' % (KNOCKOUT_NAME, EXTENSION)),
+                    verbose=False
+                )
+
+                for step in steps:
+                    if step == 'plot_stability':
+                        plot_stability(
+                            output_dir=condition_dir,
+                            verbose=verbose,
+                            indent=indent + 2
+                        )
+                    else:
+                        raise ValueError('Unrecognized step: %s' % step)
+
+    # ADDED (3): distil every condition's stability matrix to one number.
+    summarize_knockout_stability(knockout_dir, verbose=verbose, indent=indent)

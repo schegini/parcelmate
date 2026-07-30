@@ -6,6 +6,7 @@ SUBNETWORK_NAME = 'subnetwork'
 KNOCKOUT_NAME = 'knockout'
 STABILITY_NAME = 'stability'
 SAMPLE_NAME = 'sample'
+MEAN_ACTIVATION_NAME = 'mean_activations'  # ADDED: mean-out clamp values
 
 N_SAMPLES = 4
 N_TOKENS = 100000

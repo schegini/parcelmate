@@ -54,9 +54,9 @@ assert here == want, 'Imported the WRONG parcelmate: %s (wanted %s)' % (here, wa
 print('Using original parcelmate at', here)
 "
 
-# The original's `subnetwork_knockout` is its own earlier implementation, not the
-# fork's selectivity analysis; it is excluded so this run covers exactly the
-# steps the two codebases share.
+# Note there is no size-matched random baseline here: this is the original's
+# knockout plus the three additions, not the fork's selectivity analysis.
 uv run python -m parcelmate.bin.main configs/match_iter2.yaml \
     -s connectivity parcellation subnetwork_extraction \
-       plot_connectivity plot_parcellation plot_stability
+       plot_connectivity plot_parcellation plot_stability \
+       subnetwork_knockout

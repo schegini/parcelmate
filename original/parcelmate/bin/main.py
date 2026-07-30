@@ -58,9 +58,13 @@ if __name__ == '__main__':
         )
 
     if 'all' in steps or 'subnetwork_knockout' in steps:
+        # Reads its own `knockout:` config block. The original forwarded the
+        # `subnetwork_extraction` block here, which gave the knockout no way to
+        # be configured separately from subnetwork extraction.
         run_knockout(
             output_dir=cfg.get('output_dir', OUTPUT_DIR),
             connectivity_kwargs=cfg.get('connectivity', {}),
-            **cfg.get('subnetwork_extraction', {})
+            overwrite=overwrite,
+            **cfg.get('knockout', {})
         )
 

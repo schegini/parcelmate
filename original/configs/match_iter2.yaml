@@ -31,5 +31,9 @@ knockout:
   # units are clamped to -- zero, or their mean activation.
   knockout_mode: [zero, mean]
   knockout_thresh: 0.5
-  networks: null          # null = every shared subnetwork, each on its own
+  # Start narrow: every condition is a full connectivity pass over all 4 domains,
+  # and conditions multiply as networks x modes. Three networks x two modes = 6
+  # passes; `null` would run every shared subnetwork found. Widen once the first
+  # run's numbers look sane.
+  networks: [0, 1, 2]
   steps: [plot_stability]

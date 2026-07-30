@@ -1,0 +1,26 @@
+# Baseline config for the ORIGINAL (upstream) parcelmate.
+#
+# Every value here is copied from the fork's `parcelmate/configs/knockout_iter2.yaml`
+# so the two codebases see identical data and identical parcellation settings.
+# The ONLY intended difference between the two runs is the code itself. If you
+# change a number here, change it there too or the comparison is void.
+#
+# Note the output_dir is a *separate* tree from any fork run, so the two never
+# read each other's cached h5s (each pipeline resumes from whatever is already on
+# disk, so a shared output_dir would silently mix the two codebases' outputs).
+output_dir: /nlp/scr/schegini/parcelmate/original/match_iter2
+
+connectivity:
+  model_name: gpt2
+  domains: [wikitext, tldr17, codeparrot, random]
+  seq_len: 512
+  n_samples: 2
+  n_tokens: 50000
+  batch_size: 4
+
+parcellation:
+  n_networks: 50
+  n_samples: 10
+  connectivity_pca_components: 200
+
+subnetwork_extraction: {}

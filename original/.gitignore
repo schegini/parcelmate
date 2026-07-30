@@ -1,0 +1,8 @@
+# Run artifacts from baseline runs. The code and configs in this directory are
+# meant to be tracked (that is the point of having the baseline in-repo); its
+# outputs are not.
+results/
+*.out
+.venv/
+__pycache__/
+*.py[cod]

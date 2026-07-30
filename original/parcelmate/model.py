@@ -453,8 +453,15 @@ def resolve_domain_data_kwargs(domain, tokenizer, data_kwargs=None):
             dataset='codeparrot/codeparrot-clean'
         ))
     elif domain == 'tldr17':
+        # BASELINE PATCH 1 (was dataset='webis/tldr-17'): that repo is
+        # script-only, and datasets>=4 removed script support outright
+        # ("Dataset scripts are no longer supported, but found tldr-17.py"), so
+        # the original cannot load this corpus at all. Load HF's auto-converted
+        # parquet branch through the packaged 'parquet' builder instead, which
+        # is the same text by another route. Matches the fork's own fix.
         _data_kwargs.update(dict(
-            dataset='webis/tldr-17'
+            dataset='parquet',
+            data_files='hf://datasets/webis/tldr-17@refs%2Fconvert%2Fparquet/default/partial-train/*.parquet'
         ))
     elif domain == 'random':
         _data_kwargs.update(dict(

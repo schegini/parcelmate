@@ -21,12 +21,21 @@ baselines, no LM-loss evaluation, no threshold sweep.
 Three changes were needed to make 2025-era code run correctly against today's
 libraries. Each is marked in-place with a `BASELINE PATCH` comment.
 
-**Patch 1 — `model.py`, HuggingFace dataset ids (3 lines).**
+**Patch 1 — `model.py`, HuggingFace dataset loading.**
 `dataset='wikitext'` → `'Salesforce/wikitext'`, `'bookcorpus'` →
 `'bookcorpus/bookcorpus'`, and `_data_kwargs['trust_remote_code'] = True` removed.
 Bare ids no longer resolve and `trust_remote_code` was removed in `datasets>=3.0`,
-so **without this the original cannot load wikitext at all**. Same fix as the
-fork's `aca114a`.
+so **without this the original cannot load wikitext at all**.
+
+`tldr17` needed more: `webis/tldr-17` is a script-only repo and `datasets>=4`
+removed script support outright, so it dies with `RuntimeError: Dataset scripts
+are no longer supported, but found tldr-17.py` (this killed the first cluster
+run, job 16402125). It now loads HF's auto-converted parquet branch through the
+packaged `parquet` builder — the same text by another route. `get_dataset` picks
+the `content` key for it, and that selection code is byte-identical to the fork's,
+so both codebases read the same field of the same corpus.
+
+All of this matches the fork's own fixes (`aca114a` and its tldr17 handling).
 
 **Patch 2 — `data.py`, CPU fallback in `correlate` (1 line).**
 `use_gpu = use_gpu and torch.cuda.is_available()`. The original unconditionally

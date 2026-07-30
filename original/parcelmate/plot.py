@@ -300,11 +300,25 @@ def _masked_corr(a, b):
     return float(np.corrcoef(va, vb)[0, 1])
 
 
-def compute_stability_matrices(output_dir='results', verbose=False, indent=0):
+def load_knockout_selection(condition_dir):
+    """The boolean unit mask a knockout condition lesioned, or None if the
+    condition did not record one (e.g. the healthy run)."""
+    path = os.path.join(condition_dir, '%s_selection%s' % (KNOCKOUT_NAME, EXTENSION))
+    if not os.path.exists(path):
+        return None
+    return np.asarray(load_h5_data(path, verbose=False)['selection']).astype(bool)
+
+
+def compute_stability_matrices(output_dir='results', drop=None, verbose=False, indent=0):
     """Stability matrices for one run/condition directory, NaNs preserved.
 
     Within-domain stability correlates each pair of connectivity *samples* of a
     domain; between-domain stability correlates each pair of domain *averages*.
+
+    ``drop`` is an optional boolean mask over units to exclude before
+    correlating. When None, a ``knockout_selection.h5`` in ``output_dir`` is used
+    if present. Passing it explicitly is what lets the HEALTHY run be measured
+    over exactly the units some lesion removed, so the two are comparable.
 
     Returns ``{'within': {domain: (labels, R)}, 'between': (labels, R) | None}``
     or None if there is no connectivity to read.
@@ -316,10 +330,10 @@ def compute_stability_matrices(output_dir='results', verbose=False, indent=0):
     # Units this condition lesioned, if `run_knockout` recorded them. They are
     # dropped outright rather than left to NaN-filtering, which catches only the
     # ones whose connectivity came out exactly undefined -- see run_knockout.
-    drop = None
-    selection_path = os.path.join(output_dir, '%s_selection%s' % (KNOCKOUT_NAME, EXTENSION))
-    if os.path.exists(selection_path):
-        drop = np.asarray(load_h5_data(selection_path, verbose=False)['selection']).astype(bool)
+    if drop is None:
+        drop = load_knockout_selection(output_dir)
+    else:
+        drop = np.asarray(drop).astype(bool)
 
     samples_by_domain = {}
     averages_by_domain = {}
@@ -380,18 +394,52 @@ def distill_stability(mat):
     return float(np.median(finite)), int(finite.size)
 
 
-def summarize_knockout_stability(knockout_root, verbose=True, indent=0):
+def _stability_rows(stability, condition, network, mode, clamp_domain):
+    """One row per scope for an already-computed stability result."""
+    scopes = {}
+    if stability['between'] is not None:
+        scopes['betweendomain'] = stability['between'][1]
+    for domain, (_labels, R) in stability['within'].items():
+        scopes['withindomain_%s' % domain] = R
+
+    rows = []
+    for scope, mat in scopes.items():
+        median, n_pairs = distill_stability(mat)
+        rows.append(dict(
+            condition=condition,
+            network=network,
+            mode=mode,
+            clamp_domain=clamp_domain,
+            scope=scope,
+            median_stability=median,
+            n_pairs=n_pairs,
+        ))
+    return rows
+
+
+def summarize_knockout_stability(knockout_root, healthy_dir=None, verbose=True, indent=0):
     """Distil every knockout condition under ``knockout_root`` into one row per
     (condition, scope) and write ``stability_summary.csv``.
 
     Scopes are ``betweendomain`` and ``withindomain_<domain>``. Condition names
     are ``network<i>_<mode>``, so the mode and network columns let mean-out and
-    zero-out be compared network by network. Returns the DataFrame, or None if
-    there was nothing to summarize."""
+    zero-out be compared network by network.
+
+    ADDED (5): when ``healthy_dir`` points at the run root (whose
+    ``connectivity/`` is the UNPERTURBED model), one ``mode='healthy'`` row is
+    emitted per lesioned network, computed over exactly the units that network's
+    lesion removed. Without a reference, a lone stability number says nothing --
+    there is no way to tell a damaged model from one that was never very stable.
+    Matching the unit set per network matters because otherwise part of any
+    healthy-vs-lesion gap is just "these are different neurons"; at 1232 units
+    that is 12% of the model.
+
+    Returns the DataFrame, or None if there was nothing to summarize."""
     if not os.path.isdir(knockout_root):
         return None
 
     rows = []
+    masks_by_network = {}
     for condition in sorted(os.listdir(knockout_root)):
         condition_dir = os.path.join(knockout_root, condition)
         if not os.path.isdir(condition_dir):
@@ -401,24 +449,37 @@ def summarize_knockout_stability(knockout_root, verbose=True, indent=0):
             continue
 
         network, _, mode = condition.rpartition('_')
+        # `mean-<corpus>` marks a clamp to one corpus's mean, with that corpus
+        # held out of the evaluation (see run_knockout).
+        clamp_domain = ''
+        if mode.startswith('mean-'):
+            mode, clamp_domain = 'mean', mode[len('mean-'):]
         if mode not in ('zero', 'mean'):  # not a name this module wrote
-            network, mode = condition, ''
+            network, mode, clamp_domain = condition, '', ''
 
-        scopes = {}
-        if stability['between'] is not None:
-            scopes['betweendomain'] = stability['between'][1]
-        for domain, (_labels, R) in stability['within'].items():
-            scopes['withindomain_%s' % domain] = R
+        rows.extend(_stability_rows(stability, condition, network, mode, clamp_domain))
 
-        for scope, mat in scopes.items():
-            median, n_pairs = distill_stability(mat)
-            rows.append(dict(
-                condition=condition,
-                network=network,
-                mode=mode,
-                scope=scope,
-                median_stability=median,
-                n_pairs=n_pairs,
+        # Every mode of a given network lesions the same units, so one healthy
+        # reference per network covers them all.
+        mask = load_knockout_selection(condition_dir)
+        if mask is not None and network not in masks_by_network:
+            masks_by_network[network] = mask
+
+    # ADDED (5): the unperturbed reference, one row per lesioned network, over
+    # that network's surviving units. No model runs needed -- the run root's
+    # connectivity/ IS the healthy model, already written by the pipeline.
+    if healthy_dir and os.path.isdir(os.path.join(healthy_dir, CONNECTIVITY_NAME)):
+        for network, mask in sorted(masks_by_network.items()):
+            if verbose:
+                stderr('%sHealthy reference for %s (%d units held out)\n' % (
+                    ' ' * indent, network, int(mask.sum())))
+            stability = compute_stability_matrices(
+                healthy_dir, drop=mask, verbose=False, indent=indent
+            )
+            if stability is None:
+                continue
+            rows.extend(_stability_rows(
+                stability, 'healthy_vs_%s' % network, network, 'healthy', ''
             ))
 
     if not rows:

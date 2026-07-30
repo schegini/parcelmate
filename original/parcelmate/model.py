@@ -617,6 +617,17 @@ def unpack_mean_activations(data):
     return data['mean_activations'], domain_means, data['coordinates']
 
 
+def _mode_label(mode, mean_domain=None):
+    """ADDED (4): condition-name token for a knockout mode. A corpus-specific
+    mean-out clamp is tagged with the corpus it was clamped to (e.g.
+    ``mean-wikitext``), so runs against different clamp corpora land in distinct
+    directories. The ``mean``/``zero`` prefix stays first so the mode is still
+    parseable from the name."""
+    if mode == 'mean' and mean_domain is not None:
+        return 'mean-%s' % mean_domain
+    return mode
+
+
 def select_knockout(coordinates, knockout_probs, knockout_thresh=0.5, network_ix=None):
     """ADDED (2): build the boolean unit mask for knocking out ONE network.
 
@@ -983,6 +994,7 @@ def run_knockout(
         knockout_mode=('zero', 'mean'),  # ADDED (1): 'mean' = mean-out
         knockout_thresh=0.5,
         networks=None,                   # ADDED (2): which networks; None = each
+        mean_domain=None,                # ADDED (4): clamp corpus, hold it out
         steps=('plot_stability',),
         overwrite=False,
         verbose=True,
@@ -1016,6 +1028,40 @@ def run_knockout(
     for mode in knockout_mode:
         assert mode in ('zero', 'mean'), 'Unrecognized knockout_mode: %s' % mode
 
+    # ADDED (4): the corpora available to evaluate on, and which of them (if any)
+    # supply the mean-out clamp. `mean_domain` accepts None (clamp to the
+    # cross-domain aggregate and evaluate on everything, the prior behaviour), a
+    # corpus name, 'each' (one condition per corpus), or an explicit list.
+    all_domains = connectivity_kwargs.get(
+        'domains', ('wikitext', 'bookcorpus', 'agnews', 'tldr17', 'codeparrot', 'random', 'whitespace')
+    )
+    if isinstance(all_domains, str):
+        all_domains = (all_domains,)
+    all_domains = list(all_domains)
+
+    if mean_domain is None:
+        clamp_domains = [None]
+    elif mean_domain == 'each':
+        clamp_domains = list(all_domains)
+    elif isinstance(mean_domain, str):
+        clamp_domains = [mean_domain]
+    else:
+        clamp_domains = list(mean_domain)
+    for d in clamp_domains:
+        if d is None:
+            continue
+        assert d in all_domains, \
+            'mean_domain %r is not among the evaluated domains: %s' % (d, ', '.join(all_domains))
+        assert len(all_domains) > 1, \
+            'Holding out %r leaves no domains to evaluate on' % d
+
+    mode_specs = []
+    for mode in knockout_mode:
+        if mode == 'mean':
+            mode_specs.extend((mode, d) for d in clamp_domains)
+        else:
+            mode_specs.append((mode, None))
+
     subnetwork_dir = os.path.join(output_dir, SUBNETWORK_NAME)
     knockout_dir = os.path.join(output_dir, KNOCKOUT_NAME)
 
@@ -1029,8 +1075,9 @@ def run_knockout(
     # Mean-out clamp values. Computed once (a full pass over every domain) and
     # shared by every mean-out condition; skipped entirely if only zeroing out.
     mean_activations = None
+    domain_means = {}
     if 'mean' in knockout_mode:
-        mean_activations, _, mean_coordinates = compute_mean_activations(
+        mean_activations, domain_means, mean_coordinates = compute_mean_activations(
             model_name=model_name,
             output_dir=output_dir,
             overwrite=overwrite,
@@ -1073,11 +1120,29 @@ def run_knockout(
                         ' ' * indent, network_ix, knockout_thresh))
                 continue
 
-            for mode in knockout_mode:
-                condition = 'network%d_%s' % (network_ix, mode)
+            for mode, clamp_domain in mode_specs:
+                condition = 'network%d_%s' % (network_ix, _mode_label(mode, clamp_domain))
                 condition_dir = os.path.join(knockout_dir, condition)
+
+                # ADDED (4): what the units are clamped to, and what the lesioned
+                # model is then fed.
+                _connectivity_kwargs = dict(connectivity_kwargs)
+                if mode == 'mean' and clamp_domain is not None:
+                    knockout_values = domain_means[clamp_domain]
+                    _connectivity_kwargs['domains'] = [
+                        d for d in all_domains if d != clamp_domain
+                    ]
+                else:
+                    knockout_values = mean_activations if mode == 'mean' else None
+
                 if verbose:
-                    stderr('%sCondition %s (%d units)\n' % (' ' * indent, condition, n_units))
+                    if clamp_domain is None:
+                        stderr('%sCondition %s (%d units)\n' % (
+                            ' ' * indent, condition, n_units))
+                    else:
+                        stderr('%sCondition %s (%d units) -- clamped to %s, evaluated on %s\n' % (
+                            ' ' * indent, condition, n_units, clamp_domain,
+                            ', '.join(_connectivity_kwargs['domains'])))
 
                 run_connectivity(
                     model_name=model_name,
@@ -1085,24 +1150,15 @@ def run_knockout(
                     knockout_filepath=knockout_filepath,
                     knockout_thresh=knockout_thresh,
                     knockout_network_ix=network_ix,
-                    knockout_values=mean_activations if mode == 'mean' else None,
+                    knockout_values=knockout_values,
                     overwrite=overwrite,
                     verbose=verbose,
                     indent=indent + 2,
-                    **connectivity_kwargs
+                    **_connectivity_kwargs
                 )
 
                 # ADDED (3): record exactly which units were lesioned, so the
                 # stability summary can exclude them explicitly.
-                #
-                # Relying on NaN to exclude them is not enough. A lesioned unit is
-                # constant, so its connectivity SHOULD be undefined -- but
-                # `correlate` mean-centres in float32, and clamping to a large
-                # non-zero mean leaves rounding residue, so the norm is not
-                # exactly 0 and the unit yields noise correlations instead of NaN.
-                # Zero-out clamps to exactly 0.0 and NaNs much more reliably. That
-                # asymmetry would silently drop more units under zero-out than
-                # under mean-out and bias the very comparison this is here to make.
                 _, sel = select_knockout(
                     data['coordinates'], parcellation,
                     knockout_thresh=knockout_thresh, network_ix=network_ix
@@ -1124,4 +1180,8 @@ def run_knockout(
                         raise ValueError('Unrecognized step: %s' % step)
 
     # ADDED (3): distil every condition's stability matrix to one number.
-    summarize_knockout_stability(knockout_dir, verbose=verbose, indent=indent)
+    # ADDED (5): `healthy_dir` is the run root, whose connectivity/ is the
+    # unperturbed model -- so the reference costs no extra model passes.
+    summarize_knockout_stability(
+        knockout_dir, healthy_dir=output_dir, verbose=verbose, indent=indent
+    )

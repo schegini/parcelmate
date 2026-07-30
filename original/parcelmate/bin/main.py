@@ -57,6 +57,16 @@ if __name__ == '__main__':
             output_dir=cfg.get('output_dir', OUTPUT_DIR)
         )
 
+    if 'summarize_stability' in steps:
+        # Rebuild stability_summary.csv (including the healthy reference) from
+        # connectivity already on disk. No model passes, no GPU -- useful for
+        # adding the reference to a run that has already finished.
+        output_dir = cfg.get('output_dir', OUTPUT_DIR)
+        summarize_knockout_stability(
+            os.path.join(output_dir, KNOCKOUT_NAME),
+            healthy_dir=output_dir
+        )
+
     if 'all' in steps or 'subnetwork_knockout' in steps:
         # Reads its own `knockout:` config block. The original forwarded the
         # `subnetwork_extraction` block here, which gave the knockout no way to

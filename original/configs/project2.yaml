@@ -1,0 +1,36 @@
+# GOAL.md project 2: what are these subnetworks controlling?
+#
+# Same model, corpora and parcellation settings as match_iter2.yaml -- the only
+# difference is `mean_domain: each` in the knockout block, which turns each
+# mean-out condition into a cross-domain test: clamp the subnetwork to ONE
+# corpus's resting activations, then feed the model the corpora it was NOT
+# clamped to.
+#
+# The reasoning: if a subnetwork is domain-general, freezing it at wikitext's
+# mean should cost about the same whatever you then read. If it carries
+# domain-specific work, freezing it at the wrong corpus's statistics should hurt
+# more on corpora further from that one.
+output_dir: /nlp/scr/schegini/parcelmate/original/project2
+
+connectivity:
+  model_name: gpt2
+  domains: [wikitext, tldr17, codeparrot, random]
+  seq_len: 512
+  n_samples: 2
+  n_tokens: 50000
+  batch_size: 4
+
+parcellation:
+  n_networks: 50
+  n_samples: 10
+  connectivity_pca_components: 200
+
+subnetwork_extraction: {}
+
+knockout:
+  knockout_mode: [zero, mean]
+  knockout_thresh: 0.5
+  networks: null
+  mean_domain: each         # one mean-out condition per corpus, each holding its own corpus out of the evaluation
+
+  steps: [plot_stability]

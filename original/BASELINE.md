@@ -110,6 +110,59 @@ Two things this had to get right:
 over a single sample pair, so it is that pair, not a median. Raise
 `connectivity.n_samples` if you want the within-domain numbers to mean much.
 
+**(4) Cross-domain mean-out (GOAL.md project 2).** `knockout.mean_domain` clamps
+a subnetwork to **one corpus's** mean and then evaluates the lesioned model on
+**the corpora it was not clamped to**. Neither upstream nor the fork does this:
+upstream has no mean-out at all, and the fork clamps to a corpus but still
+evaluates on every corpus including that one.
+
+Holding the clamp corpus out is the point. With it left in, the frozen units sit
+at exactly the mean of the text being read — the least informative case. The
+question worth asking is what happens when the frozen network is *wrong* for the
+input.
+
+```yaml
+knockout:
+  mean_domain: each        # one condition per corpus, each holding its own out
+  # mean_domain: wikitext  # just that one
+  # mean_domain: null      # cross-domain aggregate, evaluated on everything
+```
+
+Conditions are named `network<i>_mean-<corpus>` and the summary carries a
+`clamp_domain` column, so mean-out-clamped-to-X can be read against zero-out on
+the same network. Zero-out has no clamp corpus, so it runs once over every
+domain and stays the reference.
+
+Two consequences to plan for. Conditions multiply by the number of corpora —
+`networks x (1 zero + n_corpora mean)` — so trim `networks` or `domains` before
+running. And each mean-out condition sees one fewer corpus, so its
+`betweendomain` scope has `n-1` domain averages; with only two corpora
+configured, that scope disappears entirely (it needs at least two).
+
+`configs/project2.yaml` is a ready config: match_iter2's settings plus
+`mean_domain: each`.
+
+**(5) Healthy reference.** A lone stability number says nothing — there is no way
+to tell a damaged model from one that was never very stable to begin with. The
+summary now carries a `mode='healthy'` row per lesioned network.
+
+It costs **no model passes**. The run root's `connectivity/` already *is* the
+unperturbed model, written by the pipeline's `connectivity` step; it had simply
+never been distilled. The reference is computed by re-reading those files.
+
+The reference is per network, over exactly the units that network's lesion
+removed. Comparing an all-units healthy against a lesion missing 12% of the model
+would fold "these are different neurons" into the gap you are trying to read.
+
+Rebuild the summary for a run that has already finished — no GPU, no re-running:
+
+```bash
+python -m parcelmate.bin.main configs/match_iter2.yaml -s summarize_stability
+```
+
+It loads every connectivity matrix (~10 GB for a 4-domain gpt2 run), so give it a
+CPU node rather than the login node.
+
 ## Verifying what changed
 
 ```bash

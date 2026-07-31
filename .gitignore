@@ -32,3 +32,9 @@ results_knockout_test/
 # worth keeping with `git add -f`.
 **/plots/*
 !**/plots/knockout/
+
+# Working run log. Kept local and deliberately untracked: it carries in-progress
+# interpretations, retracted findings, and open threads that should not be
+# published from this repo. Note that ignoring it does not remove it from the
+# history of commits that already contain it.
+parcelmate/c_outputs/FINDINGS.md

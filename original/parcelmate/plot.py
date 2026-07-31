@@ -309,7 +309,8 @@ def load_knockout_selection(condition_dir):
     return np.asarray(load_h5_data(path, verbose=False)['selection']).astype(bool)
 
 
-def compute_stability_matrices(output_dir='results', drop=None, verbose=False, indent=0):
+def compute_stability_matrices(output_dir='results', drop=None, domains=None,
+                               verbose=False, indent=0):
     """Stability matrices for one run/condition directory, NaNs preserved.
 
     Within-domain stability correlates each pair of connectivity *samples* of a
@@ -319,6 +320,12 @@ def compute_stability_matrices(output_dir='results', drop=None, verbose=False, i
     correlating. When None, a ``knockout_selection.h5`` in ``output_dir`` is used
     if present. Passing it explicitly is what lets the HEALTHY run be measured
     over exactly the units some lesion removed, so the two are comparable.
+
+    ``domains`` optionally restricts which corpora are read. Needed because a
+    cross-domain mean-out condition holds its clamp corpus out, so its
+    ``betweendomain`` figure covers fewer domain pairs than an unrestricted
+    reference -- comparing the two would mostly measure which corpus was
+    dropped. Passing the same subset makes them like-for-like.
 
     Returns ``{'within': {domain: (labels, R)}, 'between': (labels, R) | None}``
     or None if there is no connectivity to read.
@@ -342,6 +349,8 @@ def compute_stability_matrices(output_dir='results', drop=None, verbose=False, i
         if match and match.group(1) == CONNECTIVITY_NAME:
             domain = match.group(2)
         else:
+            continue
+        if domains is not None and domain not in domains:
             continue
         key = match.group(3)
         if key == 'avg':
@@ -410,6 +419,10 @@ def _stability_rows(stability, condition, network, mode, clamp_domain):
             network=network,
             mode=mode,
             clamp_domain=clamp_domain,
+            # For a cross-domain mean-out the clamp corpus IS the corpus held
+            # out of the evaluation, so the two coincide. `holdout` is the column
+            # to group on when comparing against matched references.
+            holdout=clamp_domain,
             scope=scope,
             median_stability=median,
             n_pairs=n_pairs,
@@ -440,6 +453,7 @@ def summarize_knockout_stability(knockout_root, healthy_dir=None, verbose=True, 
 
     rows = []
     masks_by_network = {}
+    holdout_sets = {}
     for condition in sorted(os.listdir(knockout_root)):
         condition_dir = os.path.join(knockout_root, condition)
         if not os.path.isdir(condition_dir):
@@ -464,6 +478,12 @@ def summarize_knockout_stability(knockout_root, healthy_dir=None, verbose=True, 
         mask = load_knockout_selection(condition_dir)
         if mask is not None and network not in masks_by_network:
             masks_by_network[network] = mask
+        # A cross-domain mean-out condition saw only the corpora it was NOT
+        # clamped to; record that subset so matched references can be built.
+        if clamp_domain:
+            evaluated = sorted(stability['within'])
+            if evaluated:
+                holdout_sets.setdefault(network, {})[clamp_domain] = evaluated
 
     # ADDED (5): the unperturbed reference, one row per lesioned network, over
     # that network's surviving units. No model runs needed -- the run root's
@@ -481,6 +501,40 @@ def summarize_knockout_stability(knockout_root, healthy_dir=None, verbose=True, 
             rows.extend(_stability_rows(
                 stability, 'healthy_vs_%s' % network, network, 'healthy', ''
             ))
+
+            # Matched-subset references. A mean-out condition that held out
+            # corpus X has a `betweendomain` figure over the remaining corpora
+            # only; an unrestricted reference covers more pairs, so the two
+            # differ mostly by which corpus was dropped. Emit healthy AND
+            # zero-out restricted to the same subset, tagged with `holdout`, so
+            # every mean-out row has something legitimate to be read against.
+            # Only `betweendomain` needs this -- within-domain figures do not
+            # depend on which other corpora were present.
+            for holdout, evaluated in sorted(holdout_sets.get(network, {}).items()):
+                for ref_dir, ref_label, ref_mode in (
+                        (healthy_dir, 'healthy_vs_%s' % network, 'healthy'),
+                        (os.path.join(knockout_root, '%s_zero' % network),
+                         '%s_zero' % network, 'zero'),
+                ):
+                    if not os.path.isdir(os.path.join(ref_dir, CONNECTIVITY_NAME)):
+                        continue
+                    ref = compute_stability_matrices(
+                        ref_dir, drop=mask, domains=evaluated,
+                        verbose=False, indent=indent
+                    )
+                    if ref is None or ref['between'] is None:
+                        continue
+                    median, n_pairs = distill_stability(ref['between'][1])
+                    rows.append(dict(
+                        condition='%s_ex-%s' % (ref_label, holdout),
+                        network=network,
+                        mode=ref_mode,
+                        clamp_domain='',
+                        holdout=holdout,
+                        scope='betweendomain',
+                        median_stability=median,
+                        n_pairs=n_pairs,
+                    ))
 
     if not rows:
         return None

@@ -163,6 +163,39 @@ python -m parcelmate.bin.main configs/match_iter2.yaml -s summarize_stability
 It loads every connectivity matrix (~10 GB for a 4-domain gpt2 run), so give it a
 CPU node rather than the login node.
 
+**(6) Next-token LM loss.** Stability measures whether the model is
+*self-consistent*; it cannot tell a healthy model from one that is consistently
+broken. In the first project-2 run several mean-out conditions scored *above*
+healthy on stability, simply because freezing 13% of units removes variable
+neurons and makes what remains more reproducible. Loss measures whether the model
+actually got **worse**, which is what a knockout is asking.
+
+`knockout.eval_loss` (default true) evaluates each condition, plus an
+unperturbed reference, and writes `knockout/loss_summary.csv` with `condition,
+network, mode, clamp_domain, domain, loss, perplexity, n_tokens, delta_loss`.
+**`delta_loss`** — loss minus healthy on the *same* corpus — is the column to
+compare across conditions; raw loss is dominated by how predictable the corpus is
+(healthy whitespace ≈ 0.13, healthy random ≈ 12.5).
+
+Unlike the stability reference this needs real model passes: loss cannot be
+recovered from stored connectivity. Lesioning also required teaching
+`PerturbedModel` about `AutoModelForCausalLM`, whose blocks live under
+`.transformer` rather than at the top level (`get_transformer_body`) — without
+that, lesioning an LM-head model raises `AttributeError`.
+
+**Matched between-domain references.** A cross-domain mean-out condition holds
+its clamp corpus out, so its `betweendomain` figure covers fewer domain pairs
+than an unrestricted reference — comparing them mostly measures *which corpus was
+dropped*. In the first project-2 run this was the dominant effect: the highest
+between-domain score for each network was always whichever condition dropped the
+most dissimilar corpus.
+
+The summary now also emits healthy and zero-out references **restricted to the
+same corpus subset**, named `*_ex-<corpus>` and tagged with a `holdout` column.
+Group on `holdout` and every mean-out row has a like-for-like reference. The
+unrestricted rows are kept too (`holdout` empty). Only `betweendomain` needs
+this; within-domain figures do not depend on which other corpora were present.
+
 ## Verifying what changed
 
 ```bash

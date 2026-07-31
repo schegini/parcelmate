@@ -2,18 +2,31 @@ import math
 import os
 import copy
 import numpy as np
+import pandas as pd  # ADDED (6): loss summary
 from scipy import optimize
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA, FastICA
 from sklearn.cluster import MiniBatchKMeans
 import torch
-from transformers import AutoModel, AutoTokenizer
+import torch.nn.functional as F  # ADDED (6): LM loss
+from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
 
 from parcelmate.constants import *
 from parcelmate.data import *
 from parcelmate.util import *
 from parcelmate.plot import *
+
+
+def get_transformer_body(model):
+    """ADDED (6): return the transformer stack exposing ``.h`` (blocks) and
+    ``.drop`` (embedding dropout). ``AutoModel`` (GPT2Model) is itself the body,
+    while ``AutoModelForCausalLM`` (GPT2LMHeadModel) nests it under
+    ``.transformer``. Without this, lesioning a causal-LM model raises
+    AttributeError, so LM loss could not be measured under a knockout at all."""
+    if hasattr(model, 'transformer'):
+        return model.transformer
+    return model
 
 
 class PerturbedModel(torch.nn.Module):
@@ -27,9 +40,12 @@ class PerturbedModel(torch.nn.Module):
             'perturbation_values must match perturbation_coordinates'
         self.perturbation_values = perturbation_values
 
+        # ADDED (6): was `self.model`; the body indirection lets the same lesion
+        # apply to AutoModel and AutoModelForCausalLM alike.
+        body = get_transformer_body(self.model)
         layers_attr = 'h'
         layer_indices = np.unique(perturbation_coordinates[:, 0])  # 0th dimension is layer
-        layers = getattr(self.model, layers_attr)
+        layers = getattr(body, layers_attr)
         perturbation_coordinate_tensors = {}
         perturbation_value_tensors = {}
         for l_ix in layer_indices:
@@ -62,7 +78,7 @@ class PerturbedModel(torch.nn.Module):
         for l_ix in layer_indices:
             if l_ix == 0:
                 _l_ix = 'embedding'
-                source_layer = self.model.drop
+                source_layer = body.drop
             else:
                 _l_ix = l_ix - 1  # Shifted down bc of embedding layer
                 source_layer = layers[_l_ix]
@@ -72,7 +88,7 @@ class PerturbedModel(torch.nn.Module):
                 perturbation_values=self.perturbation_value_tensors[_l_ix]
             )
             if _l_ix == 'embedding':
-                self.model.drop = layer
+                body.drop = layer
             else:
                 layers[_l_ix] = layer
 
@@ -114,9 +130,13 @@ def get_model_and_tokenizer(
         knockout_thresh=0.5,
         coordinates=None,
         network_ix=None,      # ADDED (2): which single network to lesion
-        knockout_values=None  # ADDED (1): mean-out clamp values, <n_units>
+        knockout_values=None, # ADDED (1): mean-out clamp values, <n_units>
+        for_causal_lm=False   # ADDED (6): load the LM head, for loss
 ):
-    model = AutoModel.from_pretrained(model_name)
+    if for_causal_lm:
+        model = AutoModelForCausalLM.from_pretrained(model_name)
+    else:
+        model = AutoModel.from_pretrained(model_name)
     if knockout_probs is not None:
         assert coordinates is not None, 'coordinates must be provided if knockout_probs is not None'
         perturbation_coordinates, sel = select_knockout(
@@ -233,6 +253,152 @@ def get_timecourses(
         timecourses=timecourses,  # <n_neurons, n_tokens/n_components>
         coordinates=coordinates  # <n_neurons>
     )
+
+
+def get_lm_loss(
+        model,
+        input_ids,
+        attention_mask,
+        batch_size=8,
+        verbose=True,
+        indent=0,
+        **kwargs
+):
+    """ADDED (6): mean next-token cross-entropy (and perplexity) over the given
+    inputs.
+
+    Stability measures whether the model is self-consistent; it cannot tell a
+    healthy model from one that is consistently broken. Loss measures whether
+    the model got *worse*, which is the question a knockout is actually asking.
+
+    Padding is excluded via the attention mask, and the loss is token-weighted
+    rather than batch-averaged so it is comparable across draws of different
+    length."""
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    model = model.to(device)
+    model.eval()
+    if verbose:
+        stderr('%sComputing LM loss\n' % (' ' * indent))
+    total_loss = 0.0
+    total_tokens = 0
+    B = int(math.ceil(input_ids.size(0) / batch_size))
+    indent += 2
+    with torch.no_grad():
+        for i in range(0, input_ids.size(0), batch_size):
+            if verbose:
+                stderr('\r%sBatch %d/%d' % (' ' * indent, i // batch_size + 1, B))
+            _input_ids = input_ids[i:i + batch_size].to(device)
+            _attention_mask = attention_mask[i:i + batch_size].to(device)
+            logits = model(
+                input_ids=_input_ids,
+                attention_mask=_attention_mask,
+                **kwargs
+            ).logits
+            # Shift so token t predicts token t+1.
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = _input_ids[..., 1:].contiguous()
+            shift_mask = _attention_mask[..., 1:].contiguous().reshape(-1)
+            loss = F.cross_entropy(
+                shift_logits.reshape(-1, shift_logits.size(-1)),
+                shift_labels.reshape(-1),
+                reduction='none'
+            )
+            loss = loss * shift_mask
+            total_loss += float(loss.sum().detach().cpu())
+            total_tokens += int(shift_mask.sum().detach().cpu())
+    if verbose:
+        stderr('\n')
+
+    model.to('cpu')
+    torch.cuda.empty_cache()
+
+    mean_loss = total_loss / max(total_tokens, 1)
+
+    return dict(
+        loss=mean_loss,
+        perplexity=float(np.exp(mean_loss)),
+        n_tokens=total_tokens
+    )
+
+
+def run_condition_loss(
+        model_name='gpt2',
+        domains=(),
+        knockout_filepath=None,
+        knockout_thresh=0.5,
+        knockout_network_ix=None,
+        knockout_values=None,
+        seq_len=1024,
+        n_tokens=None,
+        split='train',
+        take=100000,
+        wrap=True,
+        shuffle=True,
+        batch_size=8,
+        data_kwargs=None,
+        model_kwargs=None,
+        verbose=True,
+        indent=0,
+        **_ignored
+):
+    """ADDED (6): next-token loss for ONE knockout condition, on each domain it
+    is evaluated over. Returns ``{domain: {loss, perplexity, n_tokens}}``.
+
+    The lesion is applied exactly as in `run_connectivity` -- same selection,
+    same clamp values -- so the loss and the connectivity describe the same
+    perturbed model.
+    """
+    if model_kwargs is None:
+        model_kwargs = {}
+    if n_tokens is None:
+        n_tokens = (N_TOKENS // (seq_len * batch_size)) * seq_len * batch_size
+    if isinstance(domains, str):
+        domains = (domains,)
+
+    knockout_probs = knockout_coordinates = None
+    if knockout_filepath is not None:
+        data = load_h5_data(knockout_filepath, verbose=False)
+        knockout_probs = data['parcellation']
+        knockout_coordinates = data['coordinates']
+
+    model, tokenizer = get_model_and_tokenizer(
+        model_name,
+        knockout_probs=knockout_probs,
+        coordinates=knockout_coordinates,
+        knockout_thresh=knockout_thresh,
+        network_ix=knockout_network_ix,
+        knockout_values=knockout_values,
+        for_causal_lm=True
+    )
+
+    out = {}
+    for domain in domains:
+        _data_kwargs = resolve_domain_data_kwargs(domain, tokenizer, data_kwargs)
+        input_ids, attention_mask = get_dataset(
+            n_tokens=n_tokens,
+            split=split,
+            take=take,
+            seq_len=seq_len,
+            wrap=wrap,
+            shuffle=shuffle,
+            verbose=False,
+            indent=indent,
+            **_data_kwargs
+        )
+        out[domain] = get_lm_loss(
+            model,
+            input_ids,
+            attention_mask,
+            batch_size=batch_size,
+            verbose=verbose,
+            indent=indent,
+            **model_kwargs
+        )
+        if verbose:
+            stderr('%s%s: loss %.4f (ppl %.1f)\n' % (
+                ' ' * indent, domain, out[domain]['loss'], out[domain]['perplexity']))
+
+    return out
 
 
 def get_connectivity(timecourses, n_components=None):
@@ -995,6 +1161,7 @@ def run_knockout(
         knockout_thresh=0.5,
         networks=None,                   # ADDED (2): which networks; None = each
         mean_domain=None,                # ADDED (4): clamp corpus, hold it out
+        eval_loss=True,                  # ADDED (6): next-token loss per condition
         steps=('plot_stability',),
         overwrite=False,
         verbose=True,
@@ -1071,6 +1238,8 @@ def run_knockout(
 
     if not os.path.exists(knockout_dir):
         os.makedirs(knockout_dir)
+
+    loss_rows = []  # ADDED (6)
 
     # Mean-out clamp values. Computed once (a full pass over every domain) and
     # shared by every mean-out condition; skipped entirely if only zeroing out.
@@ -1157,6 +1326,29 @@ def run_knockout(
                     **_connectivity_kwargs
                 )
 
+                # ADDED (6): next-token loss for this condition, on the same
+                # domains the connectivity was computed over.
+                if eval_loss:
+                    losses = run_condition_loss(
+                        model_name=model_name,
+                        knockout_filepath=knockout_filepath,
+                        knockout_thresh=knockout_thresh,
+                        knockout_network_ix=network_ix,
+                        knockout_values=knockout_values,
+                        verbose=verbose,
+                        indent=indent + 2,
+                        **_connectivity_kwargs
+                    )
+                    for domain, res in losses.items():
+                        loss_rows.append(dict(
+                            condition=condition,
+                            network='network%d' % network_ix,
+                            mode=mode,
+                            clamp_domain=clamp_domain or '',
+                            domain=domain,
+                            **res
+                        ))
+
                 # ADDED (3): record exactly which units were lesioned, so the
                 # stability summary can exclude them explicitly.
                 _, sel = select_knockout(
@@ -1178,6 +1370,41 @@ def run_knockout(
                         )
                     else:
                         raise ValueError('Unrecognized step: %s' % step)
+
+    # ADDED (6): the unperturbed loss. Unlike the stability reference this DOES
+    # need model passes -- loss cannot be recovered from stored connectivity --
+    # but it is one pass per domain, and without it every knockout loss is a
+    # number with nothing to be worse than.
+    if eval_loss:
+        if verbose:
+            stderr('%sHealthy (unperturbed) loss reference\n' % (' ' * indent))
+        healthy_losses = run_condition_loss(
+            model_name=model_name,
+            knockout_filepath=None,
+            verbose=verbose,
+            indent=indent + 2,
+            **connectivity_kwargs
+        )
+        for domain, res in healthy_losses.items():
+            loss_rows.append(dict(
+                condition=HEALTHY_NAME, network='', mode='healthy',
+                clamp_domain='', domain=domain, **res
+            ))
+
+        if loss_rows:
+            df = pd.DataFrame(loss_rows)
+            # Every knockout row gains `delta_loss`: how much worse than healthy
+            # on the SAME domain. That difference, not the raw loss, is the
+            # quantity to compare across conditions.
+            healthy_by_domain = df[df['mode'] == 'healthy'].set_index('domain')['loss']
+            df['delta_loss'] = df.apply(
+                lambda r: r['loss'] - healthy_by_domain.get(r['domain'], np.nan), axis=1
+            )
+            df = df.sort_values(['domain', 'network', 'mode', 'clamp_domain'])
+            loss_path = os.path.join(knockout_dir, '%s_summary.csv' % LOSS_NAME)
+            df.to_csv(loss_path, index=False)
+            if verbose:
+                stderr('%sWrote loss summary to %s\n' % (' ' * indent, loss_path))
 
     # ADDED (3): distil every condition's stability matrix to one number.
     # ADDED (5): `healthy_dir` is the run root, whose connectivity/ is the

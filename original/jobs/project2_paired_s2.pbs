@@ -1,0 +1,71 @@
+#!/bin/bash
+#
+#SBATCH --job-name=original_project2_paired_s2
+#SBATCH --output="original_project2_paired_s2-%N-%j.out"
+#SBATCH --time=20:00:00
+#SBATCH --mem=48G
+#SBATCH --ntasks=1
+#SBATCH --gres=gpu:1
+#SBATCH --account=nlp
+#SBATCH --partition=sphinx
+
+# Project 2 PAIRED replicate 2 of 5. Submit from the original/ dir:
+#
+#     cd ~/parcelmate/original && sbatch jobs/project2_paired_s2.pbs
+#
+# Sized against project2_s2.pbs (16h), which ran 3h at n_baseline=2:
+#   --time  n_baseline 2 -> 49 means 980 baseline loss evaluations per replicate
+#           instead of 40. Each is now a model load plus ~3-4 forward passes over
+#           a CACHED tokenization, so on the order of 3h on top of the ~3h of
+#           connectivity, parcellation and stability. 20h leaves headroom for a
+#           slower node; run ONE replicate first and check before launching the
+#           rest.
+#   --mem   unchanged: the healthy reference re-reads every connectivity matrix
+#           (~10GB for 4 domains at 9984 units) once per lesioned network.
+
+set -e
+
+# Run from the ORIGINAL package dir so `python -m parcelmate...` resolves here
+# and not to the fork one level up. Asserted below.
+cd "${SLURM_SUBMIT_DIR:-$HOME/parcelmate/original}"
+
+# Keep caches + venv off the /sailhome home quota (see CLUSTER.md).
+export HF_HOME=/nlp/scr/schegini/.cache/huggingface
+export UV_CACHE_DIR=/nlp/scr/schegini/.cache/uv
+export UV_PROJECT_ENVIRONMENT=/nlp/scr/schegini/parcelmate/venvs/original_project2_paired_s2
+mkdir -p /nlp/scr/schegini/.cache /nlp/scr/schegini/parcelmate/venvs
+
+if ! command -v uv &> /dev/null; then
+    if [ -x "$HOME/.local/bin/uv" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    else
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+fi
+
+uv sync
+
+# Fail loudly if we somehow imported the fork's package instead of this one.
+uv run python -c "
+import os, parcelmate
+here = os.path.dirname(os.path.abspath(parcelmate.__file__))
+want = os.path.join(os.getcwd(), 'parcelmate')
+assert here == want, 'Imported the WRONG parcelmate: %s (wanted %s)' % (here, want)
+print('Using original parcelmate at', here)
+"
+
+# Fail loudly if the paired-evaluation fix is not present: without data_seed the
+# corpus is redrawn per condition and the whole point of this run is lost.
+uv run python -c "
+import inspect
+from parcelmate.data import get_dataset
+from parcelmate.model import get_lm_loss
+assert 'seed' in inspect.signature(get_dataset).parameters, 'get_dataset has no seed: pull the pairing fix'
+print('Paired evaluation available')
+"
+
+uv run python -m parcelmate.bin.main configs/project2_paired_s2.yaml \
+    -s connectivity parcellation subnetwork_extraction \
+       plot_connectivity plot_parcellation plot_stability \
+       subnetwork_knockout

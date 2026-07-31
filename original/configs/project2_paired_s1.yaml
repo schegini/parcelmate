@@ -1,0 +1,76 @@
+# Project 2, PAIRED replicate 1 of 5.
+#
+# Differs from project2_s1.yaml (iteration 4) in three ways, all of which had to
+# change together:
+#
+#   data_seed     Fixes WHICH tokens are drawn. Iteration 4 shuffled with the
+#                 unseeded global numpy RNG, so the knockout, each of its
+#                 size-matched baselines, and the healthy reference each read a
+#                 DIFFERENT sample of the corpus. Sampling variance therefore sat
+#                 inside the selectivity comparison, indistinguishable from
+#                 lesion effect. With this fixed, every condition sees identical
+#                 sequences, so knockout vs baseline becomes a PAIRED contrast:
+#                 per-sequence differences cancel the intrinsic difficulty of
+#                 each sequence, which is the dominant noise term (sequence loss
+#                 ranges ~2-6 nats, against effects as small as 0.15).
+#                 Deliberately the SAME value in all five replicates -- the seed
+#                 that varies is `parcellation.seed`. If the corpus varied too,
+#                 the replication would confound parcellation with text.
+#
+#   n_baseline    49, up from 2. `beats all` is a Monte Carlo permutation test:
+#                 p = (1 + #{baseline >= KO}) / (n_baseline + 1). At 2 the
+#                 SMALLEST attainable p is 0.333 -- a hard floor, not low power,
+#                 so iteration 4 could not have produced a significant cell no
+#                 matter how large the effect. 49 puts the floor at 1/50 = 0.02.
+#                 Affordable only because get_dataset now caches tokenized
+#                 corpora; re-tokenizing per baseline is what made this
+#                 prohibitive before.
+#
+#   output_dir    Fresh. Connectivity, mean_activations.h5 and the parcellation
+#                 are all skipped when they already exist, so re-running into
+#                 iteration 4's directory would compute NEW seeded losses on top
+#                 of OLD unseeded connectivity and clamp values -- silently
+#                 inconsistent. Seeding also changes the corpus feeding
+#                 connectivity, so this is a re-run, not a re-analysis: network
+#                 indices will NOT correspond to iteration 4's.
+#
+# Compare the PATTERN across replicates (whether knockouts beat their baselines,
+# which clamp corpus is gentlest), never network1 to network1.
+output_dir: /nlp/scr/schegini/parcelmate/original/project2_paired_s1
+
+connectivity:
+  model_name: gpt2
+  domains: [wikitext, tldr17, codeparrot, random]
+  seq_len: 512
+  n_samples: 2
+  n_tokens: 50000
+  batch_size: 4
+  # ~98 sequences per domain (50000 / 512). That is the n of the paired test.
+  data_seed: 0
+
+parcellation:
+  n_networks: 50
+  n_samples: 10
+  connectivity_pca_components: 200
+  # Derives a DISTINCT seed per sample internally. Do not instead put
+  # `random_state` in clustering_kwargs -- that would give all 10 samples the
+  # same seed, make every clustering identical, and collapse membership to 0/1.
+  seed: 1
+
+subnetwork_extraction: {}
+
+knockout:
+  knockout_mode: [zero, mean]
+  knockout_thresh: 0.5
+  networks: null
+  mean_domain: each
+  # Loss-only, and disjoint from the real lesion by construction. Skipped
+  # automatically for any network holding more than half the units, since no
+  # equal-sized disjoint set exists.
+  n_baseline: 49
+  # NOTE: baseline index b uses seed `baseline_seed + b` in EVERY condition.
+  # Different complements make the draws differ, but they are not independent
+  # streams across conditions. At n_baseline=49 this is a minor residual; see
+  # FINDINGS.md if it needs deriving from (network, mode, clamp, b).
+  baseline_seed: 0
+  steps: [plot_stability]

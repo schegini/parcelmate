@@ -131,7 +131,8 @@ def get_model_and_tokenizer(
         coordinates=None,
         network_ix=None,      # ADDED (2): which single network to lesion
         knockout_values=None, # ADDED (1): mean-out clamp values, <n_units>
-        for_causal_lm=False   # ADDED (6): load the LM head, for loss
+        for_causal_lm=False,  # ADDED (6): load the LM head, for loss
+        knockout_selection=None  # ADDED (7): explicit mask, overrides network_ix
 ):
     if for_causal_lm:
         model = AutoModelForCausalLM.from_pretrained(model_name)
@@ -139,9 +140,16 @@ def get_model_and_tokenizer(
         model = AutoModel.from_pretrained(model_name)
     if knockout_probs is not None:
         assert coordinates is not None, 'coordinates must be provided if knockout_probs is not None'
-        perturbation_coordinates, sel = select_knockout(
-            coordinates, knockout_probs, knockout_thresh=knockout_thresh, network_ix=network_ix
-        )
+        if knockout_selection is not None:
+            # ADDED (7): a random size-matched baseline is an arbitrary set of
+            # units, not one the parcellation can name, so it comes in as an
+            # explicit mask rather than a network index.
+            sel = np.asarray(knockout_selection).astype(bool)
+            perturbation_coordinates = coordinates[sel]
+        else:
+            perturbation_coordinates, sel = select_knockout(
+                coordinates, knockout_probs, knockout_thresh=knockout_thresh, network_ix=network_ix
+            )
         # None -> PerturbedModel defaults to zeros, i.e. zero-out. Otherwise take
         # the clamp value of each selected unit from the full-length mean vector,
         # which is aligned row-for-row with `coordinates`.
@@ -328,6 +336,7 @@ def run_condition_loss(
         knockout_thresh=0.5,
         knockout_network_ix=None,
         knockout_values=None,
+        knockout_selection=None,  # ADDED (7)
         seq_len=1024,
         n_tokens=None,
         split='train',
@@ -368,6 +377,7 @@ def run_condition_loss(
         knockout_thresh=knockout_thresh,
         network_ix=knockout_network_ix,
         knockout_values=knockout_values,
+        knockout_selection=knockout_selection,
         for_causal_lm=True
     )
 
@@ -422,6 +432,7 @@ def sample_parcellations(
         connectivity_pca_components=None,
         connectivity_ica_components=None,
         clustering_kwargs=None,
+        seed=None,  # ADDED (8): reproducible parcellation, see below
         verbose=True,
         indent=0
 ):
@@ -466,7 +477,17 @@ def sample_parcellations(
     for i in range(n_samples):
         if verbose and n_samples > 1:
             stderr('\r%sSample %d/%d' % (' ' * indent, i + 1, n_samples))
-        m = MiniBatchKMeans(n_clusters=n_networks, **clustering_kwargs)
+        # ADDED (8): a DISTINCT seed per sample. Membership is the fraction of
+        # samples that agree, so the samples must stay independent -- putting a
+        # fixed `random_state` in clustering_kwargs would make all n_samples
+        # clusterings identical and collapse every membership value to 0 or 1,
+        # silently destroying the soft parcellation. Deriving per-sample seeds
+        # keeps the samples different while making the whole run reproducible,
+        # which is what lets one parcellation be replicated against another.
+        _clustering_kwargs = dict(clustering_kwargs)
+        if seed is not None:
+            _clustering_kwargs.setdefault('random_state', int(seed) * 100003 + i)
+        m = MiniBatchKMeans(n_clusters=n_networks, **_clustering_kwargs)
         _sample = m.fit_predict(X)
         _score = m.inertia_
         samples[i, :] = _sample
@@ -783,6 +804,28 @@ def unpack_mean_activations(data):
     return data['mean_activations'], domain_means, data['coordinates']
 
 
+def sample_baseline_selection(sel, seed=0):
+    """ADDED (7): given a knockout mask, draw an equally sized set of units
+    uniformly at random from the *complement* — units the real lesion did NOT
+    touch — globally across layers.
+
+    This is the control the whole per-network claim rests on. Freezing 1358
+    neurons is expected to hurt; the question is whether freezing *these* 1358
+    hurts more than freezing any 1358. Without it, every result is equally
+    consistent with a generic capacity effect.
+    """
+    sel = np.asarray(sel).astype(bool)
+    n = int(sel.sum())
+    complement_ix = np.where(~sel)[0]
+    assert n <= len(complement_ix), \
+        'Cannot draw %d baseline units from a complement of size %d' % (n, len(complement_ix))
+    rng = np.random.default_rng(seed)
+    chosen = rng.choice(complement_ix, size=n, replace=False)
+    baseline_sel = np.zeros_like(sel)
+    baseline_sel[chosen] = True
+    return baseline_sel
+
+
 def _mode_label(mode, mean_domain=None):
     """ADDED (4): condition-name token for a knockout mode. A corpus-specific
     mean-out clamp is tagged with the corpus it was clamped to (e.g.
@@ -997,6 +1040,7 @@ def run_parcellation(
         connectivity_pca_components=200,
         connectivity_ica_components=None,
         clustering_kwargs=None,
+        seed=None,  # ADDED (8)
         n_alignments=None,
         weight_samples=False,
         overwrite=False,
@@ -1025,6 +1069,7 @@ def run_parcellation(
                 connectivity_pca_components=connectivity_pca_components,
                 connectivity_ica_components=connectivity_ica_components,
                 clustering_kwargs=clustering_kwargs,
+                seed=seed,
                 verbose=verbose,
                 indent=indent + 2
             )
@@ -1162,6 +1207,8 @@ def run_knockout(
         networks=None,                   # ADDED (2): which networks; None = each
         mean_domain=None,                # ADDED (4): clamp corpus, hold it out
         eval_loss=True,                  # ADDED (6): next-token loss per condition
+        n_baseline=2,                    # ADDED (7): size-matched random controls
+        baseline_seed=0,
         steps=('plot_stability',),
         overwrite=False,
         verbose=True,
@@ -1342,12 +1389,57 @@ def run_knockout(
                     for domain, res in losses.items():
                         loss_rows.append(dict(
                             condition=condition,
+                            kind='knockout',
                             network='network%d' % network_ix,
                             mode=mode,
                             clamp_domain=clamp_domain or '',
                             domain=domain,
                             **res
                         ))
+
+                    # ADDED (7): size-matched random controls for THIS condition.
+                    # Same number of units, drawn from the complement so they are
+                    # disjoint from the real lesion, and clamped to the very same
+                    # values. The only thing that differs is *which* units --
+                    # which is exactly the comparison the per-network claim needs.
+                    #
+                    # Loss only, deliberately: connectivity for baselines would
+                    # roughly triple the run, and the corrected stability analysis
+                    # showed no usable signal, so loss is the operative metric.
+                    _, real_sel = select_knockout(
+                        data['coordinates'], parcellation,
+                        knockout_thresh=knockout_thresh, network_ix=network_ix
+                    )
+                    if n_baseline and int(real_sel.sum()) > len(real_sel) - int(real_sel.sum()):
+                        if verbose:
+                            stderr('%sSkipping baselines for %s: %d units leaves too '
+                                   'small a complement for a disjoint draw\n' % (
+                                       ' ' * indent, condition, int(real_sel.sum())))
+                    else:
+                        for b in range(n_baseline):
+                            base_sel = sample_baseline_selection(real_sel, seed=baseline_seed + b)
+                            if verbose:
+                                stderr('%s  baseline %d/%d (%d random units)\n' % (
+                                    ' ' * indent, b + 1, n_baseline, int(base_sel.sum())))
+                            b_losses = run_condition_loss(
+                                model_name=model_name,
+                                knockout_filepath=knockout_filepath,
+                                knockout_selection=base_sel,
+                                knockout_values=knockout_values,
+                                verbose=False,
+                                indent=indent + 4,
+                                **_connectivity_kwargs
+                            )
+                            for domain, res in b_losses.items():
+                                loss_rows.append(dict(
+                                    condition='%s_%s%d' % (condition, BASELINE_NAME, b),
+                                    kind='baseline',
+                                    network='network%d' % network_ix,
+                                    mode=mode,
+                                    clamp_domain=clamp_domain or '',
+                                    domain=domain,
+                                    **res
+                                ))
 
                 # ADDED (3): record exactly which units were lesioned, so the
                 # stability summary can exclude them explicitly.
@@ -1387,7 +1479,7 @@ def run_knockout(
         )
         for domain, res in healthy_losses.items():
             loss_rows.append(dict(
-                condition=HEALTHY_NAME, network='', mode='healthy',
+                condition=HEALTHY_NAME, kind='healthy', network='', mode='healthy',
                 clamp_domain='', domain=domain, **res
             ))
 

@@ -1,0 +1,49 @@
+# Project 2, replicate 1 of 2. Identical to project2_s2.yaml except for
+# `parcellation.seed` and `output_dir`.
+#
+# Two things this adds over project2.yaml:
+#
+#   n_baseline    size-matched random controls. Freezing N neurons is expected to
+#                 hurt; the question is whether freezing THESE N hurts more than
+#                 freezing any N. Without this control every result here is
+#                 equally consistent with a generic capacity effect.
+#
+#   seed          a reproducible parcellation. Parcellation is stochastic, so
+#                 nothing found so far has been shown to replicate. Running the
+#                 same settings under two seeds asks whether the clamp-corpus
+#                 effect is a property of the model or of one lucky clustering.
+#                 Network INDICES will not correspond between the two runs --
+#                 compare the pattern (which clamp corpus is gentlest, whether
+#                 knockouts beat their baselines), never network0 to network0.
+output_dir: /nlp/scr/schegini/parcelmate/original/project2_s1
+
+connectivity:
+  model_name: gpt2
+  domains: [wikitext, tldr17, codeparrot, random]
+  seq_len: 512
+  n_samples: 2
+  n_tokens: 50000
+  batch_size: 4
+
+parcellation:
+  n_networks: 50
+  n_samples: 10
+  connectivity_pca_components: 200
+  # Derives a DISTINCT seed per sample internally. Do not instead put
+  # `random_state` in clustering_kwargs -- that would give all 10 samples the
+  # same seed, make every clustering identical, and collapse membership to 0/1.
+  seed: 1
+
+subnetwork_extraction: {}
+
+knockout:
+  knockout_mode: [zero, mean]
+  knockout_thresh: 0.5
+  networks: null
+  mean_domain: each
+  # Loss-only, and disjoint from the real lesion by construction. Skipped
+  # automatically for any network holding more than half the units, since no
+  # equal-sized disjoint set exists.
+  n_baseline: 2
+  baseline_seed: 0
+  steps: [plot_stability]

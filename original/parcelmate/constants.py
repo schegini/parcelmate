@@ -9,6 +9,7 @@ SAMPLE_NAME = 'sample'
 MEAN_ACTIVATION_NAME = 'mean_activations'  # ADDED: mean-out clamp values
 LOSS_NAME = 'loss'                         # ADDED: next-token loss summary
 HEALTHY_NAME = 'healthy'                   # ADDED: unperturbed reference
+BASELINE_NAME = 'baseline'                 # ADDED: size-matched random control
 
 N_SAMPLES = 4
 N_TOKENS = 100000

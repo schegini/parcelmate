@@ -183,6 +183,38 @@ recovered from stored connectivity. Lesioning also required teaching
 `.transformer` rather than at the top level (`get_transformer_body`) — without
 that, lesioning an LM-head model raises `AttributeError`.
 
+**(7) Size-matched random baselines.** `knockout.n_baseline` draws that many
+random unit sets per condition — same size as the real lesion, disjoint from it
+(drawn from the complement), clamped to the same values. The only thing that
+differs is *which* units.
+
+This is the control everything else rests on. Freezing 1358 neurons is expected
+to hurt; the question is whether freezing **these** 1358 hurts more than freezing
+any 1358. Without it, every result is equally consistent with a generic capacity
+effect. `loss_summary.csv` gains a `kind` column (`healthy` / `knockout` /
+`baseline`) — a subnetwork is doing something specific only if its `delta_loss`
+exceeds its baselines'.
+
+Baselines are evaluated on **loss only**: connectivity for them would roughly
+triple the run, and the corrected stability analysis showed no usable signal. A
+network holding more than half the units is skipped automatically, since no
+equal-sized disjoint set exists.
+
+**(8) Reproducible parcellation.** `parcellation.seed` makes a run repeatable, so
+a finding can be replicated under a second parcellation rather than trusted from
+one stochastic clustering.
+
+It derives a **distinct seed per sample** internally. Do not instead put
+`random_state` into `clustering_kwargs`: `MiniBatchKMeans` is constructed inside
+the sample loop, so a fixed value would make all `n_samples` clusterings
+identical, collapse every membership value to 0 or 1, and silently destroy the
+soft parcellation that `knockout_thresh` depends on.
+
+`configs/project2_s1.yaml` and `project2_s2.yaml` are a matched pair differing
+only in `seed` and `output_dir`. **Network indices will not correspond between
+them** — compare the *pattern* (which clamp corpus is gentlest, whether knockouts
+beat their baselines), never `network0` to `network0`.
+
 **Matched between-domain references.** A cross-domain mean-out condition holds
 its clamp corpus out, so its `betweendomain` figure covers fewer domain pairs
 than an unrestricted reference — comparing them mostly measures *which corpus was

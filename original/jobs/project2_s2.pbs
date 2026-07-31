@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+#SBATCH --job-name=original_project2_s2
+#SBATCH --output="original_project2_s2-%N-%j.out"
+#SBATCH --time=16:00:00
+#SBATCH --mem=48G
+#SBATCH --ntasks=1
+#SBATCH --gres=gpu:1
+#SBATCH --account=nlp
+#SBATCH --partition=sphinx
+
+# Project 2 replicate 2 of 2: cross-domain mean-out WITH size-matched random
+# mean activations, then feed it the corpora it was NOT clamped to. Submit from
+# the original/ dir:
+#
+#     cd ~/parcelmate/original && sbatch jobs/project2.pbs
+#
+# Sized larger than match_iter2.pbs on both axes:
+#   --time  conditions are networks x (1 zero + 4 mean), not networks x 2, and
+#           this output_dir is fresh so nothing resumes from cache.
+#   --mem   the healthy reference re-reads every connectivity matrix (~10GB for
+#           4 domains at 9984 units) once per lesioned network.
+
+set -e
+
+# Run from the ORIGINAL package dir so `python -m parcelmate...` resolves here
+# and not to the fork one level up. Asserted below.
+cd "${SLURM_SUBMIT_DIR:-$HOME/parcelmate/original}"
+
+# Keep caches + venv off the /sailhome home quota (see CLUSTER.md).
+export HF_HOME=/nlp/scr/schegini/.cache/huggingface
+export UV_CACHE_DIR=/nlp/scr/schegini/.cache/uv
+export UV_PROJECT_ENVIRONMENT=/nlp/scr/schegini/parcelmate/venvs/original_project2_s2
+mkdir -p /nlp/scr/schegini/.cache /nlp/scr/schegini/parcelmate/venvs
+
+if ! command -v uv &> /dev/null; then
+    if [ -x "$HOME/.local/bin/uv" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    else
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+fi
+
+uv sync
+
+# Fail loudly if we somehow imported the fork's package instead of this one.
+uv run python -c "
+import os, parcelmate
+here = os.path.dirname(os.path.abspath(parcelmate.__file__))
+want = os.path.join(os.getcwd(), 'parcelmate')
+assert here == want, 'Imported the WRONG parcelmate: %s (wanted %s)' % (here, want)
+print('Using original parcelmate at', here)
+"
+
+uv run python -m parcelmate.bin.main configs/project2_s2.yaml \
+    -s connectivity parcellation subnetwork_extraction \
+       plot_connectivity plot_parcellation plot_stability \
+       subnetwork_knockout

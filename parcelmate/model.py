@@ -273,7 +273,14 @@ def get_lm_loss(
 ):
     """Compute mean next-token cross-entropy (and perplexity) over the given
     inputs. Padding positions are excluded via the attention mask, and the loss
-    is token-weighted (not batch-averaged) so it is comparable across draws."""
+    is token-weighted (not batch-averaged) so it is comparable across draws.
+
+    Also returns the *per-sequence* losses. With a seeded corpus draw (see
+    `get_dataset`) every condition is scored on the same sequences, so a knockout
+    and its size-matched baselines can be compared sequence by sequence. That
+    turns the selectivity test from an unpaired comparison across `n_baseline`
+    draws -- which floors the attainable p-value at 1/(n_baseline+1) -- into a
+    paired one over ~n_tokens/seq_len sequences."""
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
     model.eval()
@@ -281,6 +288,8 @@ def get_lm_loss(
         stderr('%sComputing LM loss\n' % (' ' * indent))
     total_loss = 0.0
     total_tokens = 0
+    seq_loss_sums = []
+    seq_token_counts = []
     B = int(math.ceil(input_ids.size(0) / batch_size))
     indent += 2
     with torch.no_grad():
@@ -297,7 +306,10 @@ def get_lm_loss(
             # Shift so token t predicts token t+1.
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = _input_ids[..., 1:].contiguous()
-            shift_mask = _attention_mask[..., 1:].contiguous().reshape(-1)
+            # Keep the mask 2-D as well, so the flat per-token loss can be folded
+            # back to one number per sequence.
+            shift_mask_2d = _attention_mask[..., 1:].contiguous()
+            shift_mask = shift_mask_2d.reshape(-1)
             loss = F.cross_entropy(
                 shift_logits.reshape(-1, shift_logits.size(-1)),
                 shift_labels.reshape(-1),
@@ -306,6 +318,12 @@ def get_lm_loss(
             loss = loss * shift_mask
             total_loss += float(loss.sum().detach().cpu())
             total_tokens += int(shift_mask.sum().detach().cpu())
+            seq_loss_sums.append(
+                loss.reshape(shift_mask_2d.shape).sum(dim=1).detach().cpu().numpy()
+            )
+            seq_token_counts.append(
+                shift_mask_2d.sum(dim=1).detach().cpu().numpy()
+            )
     if verbose:
         stderr('\n')
 
@@ -315,10 +333,26 @@ def get_lm_loss(
     mean_loss = total_loss / max(total_tokens, 1)
     perplexity = float(np.exp(mean_loss))
 
+    # Per-sequence mean cross-entropy. A sequence that is entirely padding
+    # contributes no tokens and is recorded as NaN rather than 0, so it cannot be
+    # mistaken for a perfectly predicted sequence downstream.
+    seq_loss_sums = (np.concatenate(seq_loss_sums) if seq_loss_sums
+                     else np.zeros(0, dtype=np.float64))
+    seq_token_counts = (np.concatenate(seq_token_counts) if seq_token_counts
+                        else np.zeros(0, dtype=np.int64))
+    seq_loss = np.where(
+        seq_token_counts > 0,
+        seq_loss_sums / np.maximum(seq_token_counts, 1),
+        np.nan
+    )
+
     return dict(
         loss=mean_loss,
         perplexity=perplexity,
-        n_tokens=total_tokens
+        n_tokens=total_tokens,
+        n_seqs=int(seq_token_counts.size),
+        seq_loss=seq_loss.astype(np.float64),
+        seq_tokens=seq_token_counts.astype(np.int64)
     )
 
 
@@ -569,6 +603,7 @@ def compute_mean_activations(
         take=100000,
         wrap=True,
         shuffle=True,
+        data_seed=0,
         batch_size=8,
         data_kwargs=None,
         model_kwargs=None,
@@ -629,6 +664,7 @@ def compute_mean_activations(
             seq_len=seq_len,
             wrap=wrap,
             shuffle=shuffle,
+            seed=data_seed,
             verbose=verbose,
             indent=indent + 2,
             **_data_kwargs
@@ -704,6 +740,7 @@ def run_connectivity(
         take=100000,
         wrap=True,
         shuffle=True,
+        data_seed=0,
         batch_size=8,
         highpass=None,
         lowpass=None,
@@ -756,6 +793,7 @@ def run_connectivity(
             seq_len=seq_len,
             wrap=wrap,
             shuffle=shuffle,
+            seed=data_seed,
             verbose=verbose,
             indent=indent,
             **_data_kwargs
@@ -886,6 +924,16 @@ def run_connectivity(
             loss_data['%s_loss' % domain] = np.float32(loss_out['loss'])
             loss_data['%s_perplexity' % domain] = np.float32(loss_out['perplexity'])
             loss_data['%s_n_tokens' % domain] = np.int64(loss_out['n_tokens'])
+            # The per-sequence losses behind that mean. Every condition is scored
+            # on the same seeded corpus draw, so these vectors are aligned
+            # element-wise across conditions within a domain and support a paired
+            # knockout-vs-baseline test over sequences -- which is not bounded by
+            # 1/(n_baseline+1) the way the across-draws comparison is. Named
+            # `_seq_losses`, not `_seq_loss`: `summarize_knockout_loss` derives
+            # the domain list from keys ending in `_loss`.
+            loss_data['%s_seq_losses' % domain] = np.asarray(
+                loss_out['seq_loss'], dtype=np.float64
+            )
         save_h5_data(
             loss_data,
             os.path.join(output_dir, '%s%s' % (LOSS_NAME, EXTENSION)),
@@ -1258,7 +1306,8 @@ def run_knockout(
     mean_activations = None
     if 'mean' in modes:
         mean_allowed = {'domains', 'seq_len', 'n_tokens', 'split', 'take',
-                        'wrap', 'shuffle', 'batch_size', 'data_kwargs', 'model_kwargs'}
+                        'wrap', 'shuffle', 'data_seed', 'batch_size',
+                        'data_kwargs', 'model_kwargs'}
         mean_kwargs = {k: v for k, v in connectivity_kwargs.items() if k in mean_allowed}
         aggregate_mean, domain_means, mean_coordinates = compute_mean_activations(
             model_name=model_name,

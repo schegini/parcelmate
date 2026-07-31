@@ -7,12 +7,47 @@ import datasets
 from parcelmate.util import stderr
 
 
+# ADDED (9): tokenized-corpus cache, keyed on everything that determines the
+# returned tensors. `get_dataset` streams and tokenizes up to `take` documents
+# on EVERY call, and the knockout pipeline calls it once per domain per
+# condition -- including once per random baseline. Those tensors are identical
+# whenever the arguments are, so the repeated work is pure waste, and it is what
+# made a large `n_baseline` unaffordable. See `seed` below for why the tensors
+# are now identical in the first place.
+_DATASET_CACHE = {}
+_DATASET_CACHE_MAX = 32
+
+
+def clear_dataset_cache():
+    """ADDED (9): drop the tokenized-corpus cache (tests, or to reclaim memory)."""
+    _DATASET_CACHE.clear()
+
+
+def _dataset_cache_key(dataset, tokenizer, n_tokens, seq_len, split, take, wrap,
+                       shuffle, seed, kwargs):
+    """ADDED (9): identity of a tokenized draw. Anything that changes the token
+    tensors must appear here, or a stale draw would be silently reused."""
+    tokenizer_id = (
+        getattr(tokenizer, 'name_or_path', None),
+        getattr(tokenizer, 'vocab_size', None),
+        len(tokenizer) if hasattr(tokenizer, '__len__') else None,
+    )
+    return (
+        repr(dataset), tokenizer_id, n_tokens, seq_len, split, take, wrap,
+        shuffle, seed, repr(sorted(kwargs.items())),
+    )
+
+
 class BaselineDataset:
-    def __init__(self, dataset_type, seq_len, tokenizer=None):
+    def __init__(self, dataset_type, seq_len, tokenizer=None, seed=None):
         assert dataset_type in ('whitespace', 'random'), 'Unknown dataset type: %s' % dataset_type
         self.dataset_type = dataset_type
         self.seq_len = seq_len
         self.tokenizer = tokenizer
+        # ADDED (9): the 'random' corpus drew tokens from the unseeded global
+        # numpy RNG, so it was a different corpus on every call -- the same
+        # unpaired-comparison problem as the shuffle below, in its purest form.
+        self.rng = np.random.default_rng(seed)
         if self.dataset_type == 'random':
             assert self.tokenizer is not None, 'Tokenizer must be provided for random dataset type'
             tokens = self.tokenizer.get_vocab()
@@ -29,7 +64,7 @@ class BaselineDataset:
         if self.dataset_type == 'whitespace':
             text = ' ' * self.seq_len
         elif self.dataset_type == 'random':
-            toks = np.random.choice(self.tokens, size=self.seq_len, replace=True)
+            toks = self.rng.choice(self.tokens, size=self.seq_len, replace=True)
             text = self.tokenizer.decode(toks)
         else:
             raise ValueError('Unknown dataset type: %s' % self.dataset_type)
@@ -55,16 +90,53 @@ def get_dataset(
         take=100000,
         wrap=True,
         shuffle=True,
+        seed=0,      # ADDED (9): reproducible corpus draw; see below
+        cache=True,  # ADDED (9)
         verbose=True,
         indent=0,
         **kwargs
 ):
+    """ADDED (9) -- `seed` and `cache`.
+
+    `seed` fixes *which* documents are drawn. This used to be
+    `np.random.shuffle(dataset)` on the unseeded global numpy RNG, and nothing in
+    the package seeded it, so every call returned a DIFFERENT sample of the
+    corpus. The knockout pipeline calls this once per domain per condition, so a
+    knockout and its size-matched random baselines were each scored on different
+    text: corpus-sampling variance sat *inside* the very comparison the
+    selectivity claim rests on, indistinguishable from lesion effect. It also
+    inflated the apparent baseline noise floor, which is the yardstick the
+    clamp-corpus effect was measured against.
+
+    With a fixed seed every condition sees byte-identical tokens, so
+    knockout-vs-baseline becomes a *paired* contrast and can be tested per
+    sequence rather than across the handful of baseline draws.
+
+    Pass `seed=None` to restore the old nondeterministic behaviour; it exists
+    only so the pre-fix sampling can be reproduced deliberately.
+
+    `cache` memoizes the tokenized tensors. Streaming and tokenizing `take`
+    documents dominates the cost of a loss-only baseline, so without this a large
+    `n_baseline` is unaffordable. Callers get a copy and may mutate freely.
+    """
     if verbose:
         stderr('%sGetting input data\n' % (' ' * indent))
     assert seq_len > 0, 'seq_len must be positive'
 
+    cache_key = None
+    if cache:
+        cache_key = _dataset_cache_key(
+            dataset, tokenizer, n_tokens, seq_len, split, take, wrap, shuffle,
+            seed, kwargs
+        )
+        cached = _DATASET_CACHE.get(cache_key)
+        if cached is not None:
+            if verbose:
+                stderr('%s  (reusing cached tokenization)\n' % (' ' * indent))
+            return cached[0].clone(), cached[1].clone()
+
     if dataset in ('whitespace', 'random'):
-        dataset = BaselineDataset(dataset, seq_len, tokenizer=tokenizer)
+        dataset = BaselineDataset(dataset, seq_len, tokenizer=tokenizer, seed=seed)
     else:
         dataset = datasets.load_dataset(dataset, split=split, streaming=True, **kwargs)
         if take:
@@ -82,7 +154,11 @@ def get_dataset(
             _dataset.append(instance[key])
         dataset = _dataset
         if shuffle and take:
-            np.random.shuffle(dataset)
+            if seed is None:  # ADDED (9): legacy, nondeterministic
+                np.random.shuffle(dataset)
+            else:
+                order = np.random.default_rng(seed).permutation(len(dataset))
+                dataset = [dataset[i] for i in order]
         assert split, 'split must be specified when loading a HuggingFace dataset'
 
     _n_tokens = 0
@@ -130,6 +206,12 @@ def get_dataset(
 
     input_ids = torch.as_tensor(pad(input_ids))
     attention_mask = torch.as_tensor(pad(attention_mask))
+
+    if cache:  # ADDED (9)
+        if len(_DATASET_CACHE) >= _DATASET_CACHE_MAX:
+            _DATASET_CACHE.pop(next(iter(_DATASET_CACHE)))
+        _DATASET_CACHE[cache_key] = (input_ids, attention_mask)
+        return input_ids.clone(), attention_mask.clone()
 
     return input_ids, attention_mask
 

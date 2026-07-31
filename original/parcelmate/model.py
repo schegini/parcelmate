@@ -281,7 +281,14 @@ def get_lm_loss(
 
     Padding is excluded via the attention mask, and the loss is token-weighted
     rather than batch-averaged so it is comparable across draws of different
-    length."""
+    length.
+
+    ADDED (9): also returns the *per-sequence* losses, not just their mean. With
+    a seeded corpus draw (see `get_dataset`) every condition is scored on the
+    same sequences, so a knockout and its size-matched baselines can be compared
+    sequence by sequence. That turns the selectivity test from an unpaired
+    comparison across `n_baseline` draws -- which floors the attainable p-value
+    at 1/(n_baseline+1) -- into a paired one over ~n_tokens/seq_len sequences."""
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
     model.eval()
@@ -289,6 +296,8 @@ def get_lm_loss(
         stderr('%sComputing LM loss\n' % (' ' * indent))
     total_loss = 0.0
     total_tokens = 0
+    seq_loss_sums = []    # ADDED (9)
+    seq_token_counts = []  # ADDED (9)
     B = int(math.ceil(input_ids.size(0) / batch_size))
     indent += 2
     with torch.no_grad():
@@ -305,7 +314,10 @@ def get_lm_loss(
             # Shift so token t predicts token t+1.
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = _input_ids[..., 1:].contiguous()
-            shift_mask = _attention_mask[..., 1:].contiguous().reshape(-1)
+            # ADDED (9): keep the mask 2-D as well, so the flat per-token loss
+            # can be folded back to one number per sequence.
+            shift_mask_2d = _attention_mask[..., 1:].contiguous()
+            shift_mask = shift_mask_2d.reshape(-1)
             loss = F.cross_entropy(
                 shift_logits.reshape(-1, shift_logits.size(-1)),
                 shift_labels.reshape(-1),
@@ -314,6 +326,13 @@ def get_lm_loss(
             loss = loss * shift_mask
             total_loss += float(loss.sum().detach().cpu())
             total_tokens += int(shift_mask.sum().detach().cpu())
+            # ADDED (9)
+            seq_loss_sums.append(
+                loss.reshape(shift_mask_2d.shape).sum(dim=1).detach().cpu().numpy()
+            )
+            seq_token_counts.append(
+                shift_mask_2d.sum(dim=1).detach().cpu().numpy()
+            )
     if verbose:
         stderr('\n')
 
@@ -322,10 +341,26 @@ def get_lm_loss(
 
     mean_loss = total_loss / max(total_tokens, 1)
 
+    # ADDED (9): per-sequence mean cross-entropy. A sequence that is entirely
+    # padding contributes no tokens and is recorded as NaN rather than 0, so it
+    # cannot be mistaken for a perfectly predicted sequence downstream.
+    seq_loss_sums = (np.concatenate(seq_loss_sums) if seq_loss_sums
+                     else np.zeros(0, dtype=np.float64))
+    seq_token_counts = (np.concatenate(seq_token_counts) if seq_token_counts
+                        else np.zeros(0, dtype=np.int64))
+    seq_loss = np.where(
+        seq_token_counts > 0,
+        seq_loss_sums / np.maximum(seq_token_counts, 1),
+        np.nan
+    )
+
     return dict(
         loss=mean_loss,
         perplexity=float(np.exp(mean_loss)),
-        n_tokens=total_tokens
+        n_tokens=total_tokens,
+        n_seqs=int(seq_token_counts.size),   # ADDED (9)
+        seq_loss=seq_loss.astype(np.float64),      # ADDED (9)
+        seq_tokens=seq_token_counts.astype(np.int64)  # ADDED (9)
     )
 
 
@@ -343,6 +378,7 @@ def run_condition_loss(
         take=100000,
         wrap=True,
         shuffle=True,
+        data_seed=0,  # ADDED (9): identical tokens for every condition
         batch_size=8,
         data_kwargs=None,
         model_kwargs=None,
@@ -356,6 +392,10 @@ def run_condition_loss(
     The lesion is applied exactly as in `run_connectivity` -- same selection,
     same clamp values -- so the loss and the connectivity describe the same
     perturbed model.
+
+    ADDED (9): `data_seed` fixes the corpus draw, so this condition is scored on
+    exactly the tokens every other condition was scored on. Without it each call
+    drew a fresh sample and the knockout-vs-baseline contrast was unpaired.
     """
     if model_kwargs is None:
         model_kwargs = {}
@@ -391,6 +431,7 @@ def run_condition_loss(
             seq_len=seq_len,
             wrap=wrap,
             shuffle=shuffle,
+            seed=data_seed,  # ADDED (9)
             verbose=False,
             indent=indent,
             **_data_kwargs
@@ -677,6 +718,7 @@ def compute_mean_activations(
         take=100000,
         wrap=True,
         shuffle=True,
+        data_seed=0,  # ADDED (9)
         batch_size=8,
         data_kwargs=None,
         model_kwargs=None,
@@ -741,6 +783,7 @@ def compute_mean_activations(
             seq_len=seq_len,
             wrap=wrap,
             shuffle=shuffle,
+            seed=data_seed,  # ADDED (9)
             verbose=verbose,
             indent=indent + 2,
             **_data_kwargs
@@ -869,6 +912,7 @@ def run_connectivity(
         take=100000,
         wrap=True,
         shuffle=True,
+        data_seed=0,  # ADDED (9)
         batch_size=8,
         highpass=None,
         lowpass=None,
@@ -927,6 +971,7 @@ def run_connectivity(
             seq_len=seq_len,
             wrap=wrap,
             shuffle=shuffle,
+            seed=data_seed,  # ADDED (9)
             verbose=verbose,
             indent=indent,
             **_data_kwargs
@@ -1287,6 +1332,20 @@ def run_knockout(
         os.makedirs(knockout_dir)
 
     loss_rows = []  # ADDED (6)
+    # ADDED (9): per-sequence losses, keyed '<condition>::<domain>'. Kept out of
+    # the CSV (one row per condition x domain stays scalar) and written to h5,
+    # where the paired knockout-vs-baseline test reads them.
+    seq_loss_arrays = {}
+
+    def _record_loss(row, res):
+        """ADDED (9): split one condition's result into its scalar summary row
+        and its per-sequence vector."""
+        res = dict(res)
+        seq_loss = res.pop('seq_loss', None)
+        res.pop('seq_tokens', None)
+        loss_rows.append(dict(row, **res))
+        if seq_loss is not None:
+            seq_loss_arrays['%s::%s' % (row['condition'], row['domain'])] = seq_loss
 
     # Mean-out clamp values. Computed once (a full pass over every domain) and
     # shared by every mean-out condition; skipped entirely if only zeroing out.
@@ -1301,7 +1360,8 @@ def run_knockout(
             indent=indent,
             **{k: v for k, v in connectivity_kwargs.items()
                if k in ('domains', 'seq_len', 'n_tokens', 'split', 'take', 'wrap',
-                        'shuffle', 'batch_size', 'data_kwargs', 'model_kwargs')}
+                        'shuffle', 'data_seed', 'batch_size', 'data_kwargs',
+                        'model_kwargs')}
         )
 
     for path in sorted(os.listdir(subnetwork_dir)):
@@ -1387,15 +1447,14 @@ def run_knockout(
                         **_connectivity_kwargs
                     )
                     for domain, res in losses.items():
-                        loss_rows.append(dict(
+                        _record_loss(dict(  # ADDED (9)
                             condition=condition,
                             kind='knockout',
                             network='network%d' % network_ix,
                             mode=mode,
                             clamp_domain=clamp_domain or '',
                             domain=domain,
-                            **res
-                        ))
+                        ), res)
 
                     # ADDED (7): size-matched random controls for THIS condition.
                     # Same number of units, drawn from the complement so they are
@@ -1431,15 +1490,14 @@ def run_knockout(
                                 **_connectivity_kwargs
                             )
                             for domain, res in b_losses.items():
-                                loss_rows.append(dict(
+                                _record_loss(dict(  # ADDED (9)
                                     condition='%s_%s%d' % (condition, BASELINE_NAME, b),
                                     kind='baseline',
                                     network='network%d' % network_ix,
                                     mode=mode,
                                     clamp_domain=clamp_domain or '',
                                     domain=domain,
-                                    **res
-                                ))
+                                ), res)
 
                 # ADDED (3): record exactly which units were lesioned, so the
                 # stability summary can exclude them explicitly.
@@ -1478,10 +1536,10 @@ def run_knockout(
             **connectivity_kwargs
         )
         for domain, res in healthy_losses.items():
-            loss_rows.append(dict(
+            _record_loss(dict(  # ADDED (9)
                 condition=HEALTHY_NAME, kind='healthy', network='', mode='healthy',
-                clamp_domain='', domain=domain, **res
-            ))
+                clamp_domain='', domain=domain
+            ), res)
 
         if loss_rows:
             df = pd.DataFrame(loss_rows)
@@ -1497,6 +1555,20 @@ def run_knockout(
             df.to_csv(loss_path, index=False)
             if verbose:
                 stderr('%sWrote loss summary to %s\n' % (' ' * indent, loss_path))
+
+        # ADDED (9): the per-sequence losses behind those means. Every condition
+        # was scored on the same seeded corpus draw, so these vectors are aligned
+        # element-wise across conditions *within a domain* and support a paired
+        # knockout-vs-baseline test over sequences -- which is not bounded by
+        # 1/(n_baseline+1) the way the across-draws comparison is.
+        if seq_loss_arrays:
+            seq_path = os.path.join(
+                knockout_dir, '%s_per_sequence%s' % (LOSS_NAME, EXTENSION)
+            )
+            save_h5_data(seq_loss_arrays, seq_path, verbose=False)
+            if verbose:
+                stderr('%sWrote per-sequence losses (%d vectors) to %s\n' % (
+                    ' ' * indent, len(seq_loss_arrays), seq_path))
 
     # ADDED (3): distil every condition's stability matrix to one number.
     # ADDED (5): `healthy_dir` is the run root, whose connectivity/ is the
